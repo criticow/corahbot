@@ -1,0 +1,3 @@
+[submodule "deps/glbase"]
+	path = deps/glbase
+	url = https://github.com/criticow/glbase.git
