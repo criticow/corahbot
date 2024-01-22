@@ -1,0 +1,85 @@
+{
+  "version": "0.0.1",
+  "markers": [
+    {
+      "name": "potion_home_0",
+      "location": "home",
+      "x": 0,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_1",
+      "location": "home",
+      "x": 15,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_2",
+      "location": "home",
+      "x": 30,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_3",
+      "location": "home",
+      "x": 45,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_4",
+      "location": "home",
+      "x": 60,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_5",
+      "location": "home",
+      "x": 75,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_6",
+      "location": "home",
+      "x": 90,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_7",
+      "location": "home",
+      "x": 105,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_8",
+      "location": "home",
+      "x": 120,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    },
+    {
+      "name": "potion_home_9",
+      "location": "home",
+      "x": 135,
+      "y": 0,
+      "width": 14,
+      "height": 15
+    }
+  ]
+}

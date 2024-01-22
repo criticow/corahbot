@@ -4,7 +4,6 @@
 #include <fontawesome6.h>
 #include <chrono>
 #include <opencv2/opencv.hpp>
-#include <Windows.h>
 #include "bot.hpp"
 
 class Application;
@@ -12,20 +11,21 @@ class Application;
 class GUI : public BaseGUI
 {
   public:
-  GUI(){};
-  GUI(Application *app) : BaseGUI()
-  {
-    this->app = app;
-  };
+  std::unordered_map<std::string, InstanceState> instanceStates;
+  std::unordered_map<std::string, std::mutex> instanceMutexes;
+
+  std::vector<std::string> instances;
+
+  GUI() : BaseGUI(){};
   virtual void renderUI() override;
-  void addFonts();
-  void destroy();
+  void farmUI(const std::string &instance);
+  void combineUI(const std::string &instance);
+  void cleanup();
+  void update();
+  void init();
+
 
   private:
-  Application *app = nullptr;
-  std::unordered_map<int, std::mutex> mutexes;
-  std::unordered_map<int, std::thread> threads;
-  void mainUI();
-  void automationUI();
-  void botThread(Instance &instance, Emulator &emulator);
+  std::unordered_map<std::string, WorkConfig> configs;
+  void loadFonts();
 };

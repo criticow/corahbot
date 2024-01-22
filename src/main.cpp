@@ -2,7 +2,7 @@
 
 int main()
 {
-  Application app(800, 600, "Corahbot");
+  Application app(600, 600, "Corahbot");
   app.run();
   return 0;
 }

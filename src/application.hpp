@@ -2,15 +2,18 @@
 
 #include <glb/glb.hpp>
 #include "gui.hpp"
-#include "emulator.hpp"
+#include <opencv2/core/utils/logger.hpp>
+#include "bot.hpp"
+#include <Windows.h>
+#include <psapi.h>
 
 class Application
 {
   public:
   Window window;
-  Emulator emulator;
-  Time time;
+  static Time time;
   Input input;
+  static Texture2D gemsTexture;
 
   Application(int width, int height, const char *title);
   void run();

@@ -1,0 +1,42 @@
+{
+    "markers": [
+        {
+            "height": 13,
+            "location": "combat",
+            "name": "afk_btn",
+            "width": 27,
+            "x": 94,
+            "y": 588
+        },
+        {
+            "height": 16,
+            "location": "home",
+            "name": "start_adv_btn",
+            "width": 35,
+            "x": 156,
+            "y": 478
+        },
+        {"name":"inv_basic","location":"inventory","x":39,"y":319,"width":268,"height":221},
+        {"name":"inv_line_one","location":"inventory","x":40,"y":320,"width":266,"height":52},
+        {"name":"inv_line_two","location":"inventory","x":40,"y":375,"width":266,"height":52},
+        {"name":"inv_line_three","location":"inventory","x":40,"y":430,"width":266,"height":52},
+        {"name":"inv_line_four","location":"inventory","x":40,"y":486,"width":266,"height":52},
+        {
+            "height": 11,
+            "location": "combat",
+            "name": "potion_combat",
+            "width": 20,
+            "x": 76,
+            "y": 557
+        },
+        {
+            "height": 15,
+            "location": "home",
+            "name": "potion_home",
+            "width": 14,
+            "x": 118,
+            "y": 373
+        }
+    ],
+    "version": "0.0.1"
+}

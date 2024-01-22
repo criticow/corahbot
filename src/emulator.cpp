@@ -1,18 +1,38 @@
 #include "emulator.hpp"
+#include "bot.hpp"
 
-void Emulator::destroy()
-{
-  for(auto &instance : instances)
-  {
-    instance.isWorking = false;
-    instance.isRunning = false;
-    instance.isDebugging = false;
+std::string console = "C:/Nox/bin/NoxConsole.exe";
+// std::string console = "C:/LDPlayer/LDPlayer9/ldconsole.exe";
+
+BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
+  if (IsWindowVisible(hWnd)) {
+    char title[256];
+    GetWindowText(hWnd, title, sizeof(title));
+
+    DWORD processId;
+    GetWindowThreadProcessId(hWnd, &processId);
+
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+    if (hProcess != NULL) {
+      char processName[MAX_PATH];
+      GetModuleBaseNameA(hProcess, NULL, processName, sizeof(processName));
+
+      if(strcmp(processName, "Nox.exe") == 0 && strcmp(title, "Nox") != 0)
+      {
+        std::vector<std::string> *list = reinterpret_cast<std::vector<std::string>*>(lParam);
+        list->insert(list->begin(), title);
+      }
+
+      CloseHandle(hProcess);
+    }
   }
+
+  return TRUE;
 }
 
 void Emulator::arrange()
 {
-  std::string res = util::parseCMD(this->console, {"arrange"});
+  std::string res = util::parseCMD(console, {"arrange"});
 
   if(!res.empty())
   {
@@ -20,58 +40,16 @@ void Emulator::arrange()
   }
 }
 
-void Emulator::list()
+std::vector<std::string> Emulator::list()
 {
-  std::string res = util::parseCMD(this->console, {"list"});
-
-  if(!res.empty())
-  {
-    std::vector<std::string> lines = util::split(res, '\n');
-
-    for(auto &line : lines)
-    {
-      // 0: -index, 1: nox_id, 2: -name, 4: top win handle, 5: PID
-      std::vector<std::string> values = util::split(line, ',');
-      bool existingInstance = false;
-
-      // Update the existing instance
-      for(auto &instance : instances)
-      {
-        // Found the instance
-        if(instance.index == (uint16_t)std::stoi(values[0]))
-        {
-          existingInstance = true;
-
-          instance.name = values[2];
-          instance.hwnd = reinterpret_cast<HWND>((uintptr_t)std::stoul(values[3].c_str(), nullptr, 16));
-          instance.PID = std::stoi(values[5]);
-          instance.isRunning = instance.PID != 0;
-
-          break;
-        }
-      }
-
-      // Exits the lines loop's current iteration
-      if(existingInstance)
-      {
-        continue;
-      }
-
-      // Push a new instance into the instances vector
-      this->instances.push_back(Instance{
-        .index = (uint16_t)std::stoi(values[0]),
-        .name = values[2],
-        .hwnd = reinterpret_cast<HWND>((uintptr_t)std::stoul(values[3].c_str(), nullptr, 16)),
-        .PID = std::stoi(values[5]),
-        .isRunning = std::stoi(values[5]) != 0
-      });
-    }
-  }
+  std::vector<std::string> instances;
+  EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&instances));
+  return instances;
 }
 
-void Emulator::launch(uint16_t index)
+void Emulator::launch(int index)
 {
-  std::string res = util::parseCMD(this->console, {"launch", std::format("-index:{}", index)});
+  std::string res = util::parseCMD(console, {"launch", std::format("-index:{}", index)});
 
   if(!res.empty())
   {
@@ -79,9 +57,9 @@ void Emulator::launch(uint16_t index)
   }
 }
 
-void Emulator::quit(uint16_t index)
+void Emulator::quit(int index)
 {
-  std::string res = util::parseCMD(this->console, {"quit", std::format("-index:{}", index)});
+  std::string res = util::parseCMD(console, {"quit", std::format("-index:{}", index)});
 
   if(!res.empty())
   {
@@ -89,9 +67,89 @@ void Emulator::quit(uint16_t index)
   }
 }
 
-void Emulator::runapp(uint16_t index, const std::string &packagename)
+void Emulator::click(const std::string &windowTitle, glm::ivec2 point)
 {
-  std::string res = util::parseCMD(std::format("{} runapp -index:{} -packagename:{}", this->console, index, packagename));
+  HWND hWnd = FindWindow(nullptr, windowTitle.c_str());
+
+  LPARAM lParam = MAKELPARAM(point.x, point.y);
+
+  // Send left mouse button down message
+  SendMessage(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
+
+  // Send left mouse button up message
+  SendMessage(hWnd, WM_LBUTTONUP, 0, lParam);
+}
+
+std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle)
+{
+  std::pair matchResult = std::make_pair(false, glm::ivec4(0));
+
+  cv::Mat result;
+  cv::matchTemplate(haystack, needle, result, cv::TM_CCOEFF_NORMED);
+
+  // Locate the best match
+  cv::Point minLoc, maxLoc;
+  cv::minMaxLoc(result, nullptr, nullptr, &minLoc, &maxLoc);
+
+  if (result.at<float>(maxLoc) > 0.8) {
+    matchResult.first = true;
+    matchResult.second = glm::ivec4(maxLoc.x, maxLoc.y, needle.cols, needle.rows);
+  }
+
+  return matchResult;
+}
+
+std::pair<bool, glm::ivec4> Emulator::find(const std::string &windowTitle, Marker marker , const std::string &haystackPath)
+{
+  cv::Mat image = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  cv::Mat needle;
+  cv::cvtColor(image, needle, cv::COLOR_BGR2GRAY);
+
+  cv::Mat haystack = cv::imread("data/haystacks/" + haystackPath + ".png", cv::IMREAD_GRAYSCALE);
+
+  return find(haystack, needle);
+}
+
+std::pair<bool, glm::ivec4> Emulator::find(const std::string &windowTitle, const std::string &needlePath, float threshold = 0.8)
+{
+  cv::Mat needle = cv::imread(needlePath, cv::IMREAD_GRAYSCALE);
+  cv::Mat haystack;
+  cv::cvtColor(printscreen(windowTitle), haystack, cv::COLOR_BGR2GRAY);
+
+  return find(haystack, needle);
+}
+
+void Emulator::drawRectangles(cv::Mat &canvas, const std::vector<glm::ivec4> &points)
+{
+  for(auto &point : points)
+  {
+    cv::Rect roiRect(point.x, point.y, point.z, point.w);
+    cv::rectangle(canvas, roiRect, cv::Scalar(0, 255, 0), 2); // Green rectangle
+
+    int centerX = point.x + point.z / 2;
+    int centerY = point.y + point.w / 2;
+
+    cv::circle(canvas, cv::Point(centerX, centerY), 5, cv::Scalar(255, 0, 0), -1); // Blue circle
+  }
+}
+
+bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
+{
+  cv::Mat image1 = cv::imread("data/needles/" + marker.name + ".png");
+  cv::Mat image2 = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  cv::Mat diff;
+  cv::absdiff(image1, image2, diff);
+  cv::Scalar sum = cv::sum(diff);
+
+  // If the sum of differences is zero, the images are the same
+  return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
+}
+
+void Emulator::runapp(int index, const std::string &packagename)
+{
+  std::string res = util::parseCMD(std::format("{} runapp -index:{} -packagename:{}", console, index, packagename));
 
   if(!res.empty())
   {
@@ -156,14 +214,15 @@ cv::Mat Emulator::printscreen(const std::string & windowTitle)
   DeleteDC(hdcMem);
   ReleaseDC(hwnd, hdcScreen);
 
-  // Crop the image
-  int top_crop = 32;
-  int left_crop = 2;
-  int right_crop = 40;
-  int bottom_crop = 2;
-
-  cv::Rect crop_region(left_crop, top_crop, width - left_crop - right_crop, height - top_crop - bottom_crop);
-  cv::Mat cropped_screenshot = screenshot(crop_region).clone();
-
-  return cropped_screenshot;
+  return screenshot;
 }
+
+cv::Mat Emulator::printscreen(const std::string &windowTitle, int x, int y, int width, int height)
+{
+  cv::Mat screenshot = printscreen(windowTitle);
+  cv::Rect cropRegion(x, y, width, height);
+  cv::Mat croped = screenshot(cropRegion).clone();
+
+  return croped;
+}
+

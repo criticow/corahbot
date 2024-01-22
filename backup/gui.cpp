@@ -52,7 +52,7 @@ void GUI::addFonts()
   io.Fonts->AddFontFromFileTTF("data/fonts/fontawesome-webfont.ttf", 10.0f, &config, icon_ranges);
 }
 
-void GUI::destroy()
+void GUI::cleanup()
 {
   for(auto &[index, thread] : threads)
   {

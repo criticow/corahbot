@@ -17,21 +17,16 @@ std::vector<std::string> util::split(const std::string &str, char delimiter)
 std::string util::parseCMD(const std::string &cmd)
 {
   std::string response;
-  std::filesystem::path tmpFile = std::filesystem::temp_directory_path() / (Random::UUID() + ".txt");
 
-  int res = std::system((cmd + " > " + tmpFile.string()).c_str());
-
-  if(res == 0)
+  FILE* pipe = _popen((cmd).c_str(), "r");
+  if(pipe != nullptr)
   {
-    std::ifstream file(tmpFile);
-    if(file.is_open())
+    char buffer[128];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr)
     {
-      std::ostringstream sstream;
-      sstream << file.rdbuf();
-      response = sstream.str();
-      file.close();
+      response += buffer;
     }
-    std::filesystem::remove(tmpFile);
+    _pclose(pipe);
   }
 
   return response;
