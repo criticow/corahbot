@@ -1,6 +1,10 @@
 #include "gui.hpp"
 #include "application.hpp"
 
+// START STATIC MEMBERS INITIALIZATION
+// std::unordered_map<std::string, WorkConfig> GUI::configs;
+// END STATIC MEMBERS INITIALIZATION
+
 ImVec4 yellow(1.0f, 0.9f, 0.2f, 1.0f);
 ImVec4 orange(0.99f, 0.69f, 0.26f, 1.0f);
 ImVec4 white(1.0f, 1.0f, 1.0f, 1.0f);
@@ -21,13 +25,13 @@ std::vector<std::string> portals{
 
 std::unordered_map<std::string, std::vector<std::string>> monsters{
   {"Ranhain", {"Bear (Lv.3)", "Giant Ant (Lv.8)", "Chinavia (Lv.15)", "Enraged Turtle (Lv.23)", "Goblin Thief (Lv.26)", "Scavanger (Lv.32)", "Amphnaly (Lv.40)", "Goblin Chief (Lv.50)"}},
-  {"Dekdun", { "Skeleton Worker (Lv.60)", "Lost Amummy (Lv.70)", "Skeleton Captain (Lv.80)", "Skeleton Wizard (Lv.85)", "Skeleton Thief (Lv.90)", "Thia (Lv.100)", "Skeleton King (Lv.105)" }}
+  {"Dekdun", {"Skeleton Worker (Lv.60)", "Lost Amummy (Lv.70)", "Skeleton Captain (Lv.80)", "Skeleton Wizard (Lv.85)", "Skeleton Thief (Lv.90)", "Thia (Lv.100)", "Skeleton King (Lv.105)" }}
 };
 
-void botThread(std::mutex &stateMutex, InstanceState &state, const std::string &instance)
+void botThread(const std::string &instance)
 {
   Bot bot;
-  bot.run(stateMutex, state, instance);
+  bot.run(instance);
 }
 
 void RoundedTag(const char* label, ImVec4 bgColor, ImVec4 textColor, ImVec4 borderColor) {
@@ -53,13 +57,14 @@ void RoundedTag(const char* label, ImVec4 bgColor, ImVec4 textColor, ImVec4 bord
 void GUI::renderUI()
 {
   ImVec2 windowSize = ImGui::GetIO().DisplaySize;
+  int baseWindowHeight = 100;
+  int statsWindowWidth = 125;
 
-  ImGui::Begin("BaseWindow", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-
-  int baseWindowHeight = 50;
-
+  // START GENERAL WINDOW
+  ImGui::Begin("GeneralWindow", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
   ImGui::SetWindowPos(ImVec2(0, 0));
-  ImGui::SetWindowSize(ImVec2(windowSize.x, baseWindowHeight));
+  ImGui::SetWindowSize(ImVec2(windowSize.x - statsWindowWidth, baseWindowHeight));
+  ImGui::SeparatorText("General");
 
   if(ImGui::Button("Refresh"))
   {
@@ -67,84 +72,43 @@ void GUI::renderUI()
   }
 
   ImGui::End();
+  // END GENERAL WINDOW
 
-  ImGui::Begin("Instances", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-  ImGui::SetWindowPos(ImVec2(0, 50));
+  // START STATS WINDOW
+  ImGui::Begin("StatsWindow", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+  ImGui::SetWindowPos(ImVec2(windowSize.x - statsWindowWidth, 0));
+  ImGui::SetWindowSize(ImVec2(statsWindowWidth, baseWindowHeight));
+
+  ImGui::SeparatorText("Stats");
+  ImGui::Text(std::format("MS: {:.2f}", Application::tempo.ms).c_str());
+  ImGui::Text(std::format("FPS: {:.2f}", Application::tempo.fps).c_str());
+
+  ImGui::End();
+  // END STATS WINDOW
+
+  // STARTS INSTANCES WINDOW
+  ImGui::Begin("InstancesWindow", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+  ImGui::SetWindowPos(ImVec2(0, baseWindowHeight));
   ImGui::SetWindowSize(ImVec2(windowSize.x, windowSize.y - baseWindowHeight));
   
-  if(!instances.empty() && ImGui::BeginTabBar("Tabs", ImGuiTabBarFlags_Reorderable))
+  if(!this->instances.empty() && ImGui::BeginTabBar("Tabs", ImGuiTabBarFlags_Reorderable))
   {
-    for(size_t i = 0; i < instances.size(); i++)
+    for(size_t i = 0; i < this->instances.size(); i++)
     {
-      std::string &instance = instances[i];
+      std::string &instance = this->instances[i];
       ImGui::PushID(i);
-      // if(ImGui::BeginTabItem(std::format("- {} -", i + 1).c_str()))
       if(ImGui::BeginTabItem(instance.c_str()))
       {
-        std::lock_guard<std::mutex> lock(this->instanceMutexes[instance]);
 
-        ImGui::SeparatorText(("States for Instance: " + instance).c_str());
-        if(this->instanceStates[instance].open.load())
-        {
-          RoundedTag("Window Open", green, black, green);
-        }
-        if(!this->instanceStates[instance].open.load())
-        {
-          ImGui::SameLine();
-          RoundedTag("Window Closed", red, white, red);
-        }
-        if(this->instanceStates[instance].working.load())
-        {
-          ImGui::SameLine();
-          RoundedTag("Bot Working", green, black, green);
-        }
-        if(!this->instanceStates[instance].working.load())
-        {
-          ImGui::SameLine();
-          RoundedTag("Bot Stopped", red, white, red);
-        }
-        if(!this->instanceStates[instance].minimized.load())
-        {
-          ImGui::SameLine();
-          RoundedTag("Window Acessible", green, black, green);
-        }
-        if(this->instanceStates[instance].minimized.load())
-        {
-          ImGui::SameLine();
-          RoundedTag("Window Minimized", red, white, red);
-        }
-        ImGui::Spacing();
+        this->statesUI(instance);
+        this->actionsUI(instance);
 
-        ImGui::SeparatorText("Actions");
-        ImGui::BeginDisabled(instanceStates[instance].working.load());
-        if(ImGui::Button(ICON_FA_PLAY))
-        {
-          instanceStates[instance].working.store(true);
-
-          std::thread(
-            botThread,
-            std::ref(this->instanceMutexes[instance]),
-            std::ref(this->instanceStates[instance]),
-            std::ref(instance)
-          ).detach();
-        }
-        ImGui::EndDisabled();
-
-        ImGui::SameLine();
-        ImGui::BeginDisabled(!instanceStates[instance].working.load());
-        if(ImGui::Button(ICON_FA_STOP))
-        {
-          instanceStates[instance].working.store(false);
-        }
-        ImGui::EndDisabled();
-
-        ImGui::Spacing();
-        
         ImGui::SeparatorText("Routines");
         if(ImGui::BeginTabBar("ActionsTabBar"))
         {
-          farmUI(instance);
-          combineUI(instance);
+          this->farmUI(instance);
+          this->combineUI(instance);
+          this->summaryUI(instance);
           ImGui::EndTabBar();
         }
 
@@ -157,19 +121,22 @@ void GUI::renderUI()
   }
 
   ImGui::End();
+  // END INSTANCES WINDOW
 }
 
 void GUI::farmUI(const std::string &instance)
 {
-  WorkConfig &config = configs[instance];
+  WorkConfig &config = Store::configs[instance];
   std::vector<std::string> &monsterList = monsters[portals[config.selectedPortal]];
 
   if(ImGui::BeginTabItem("Farm"))
   {
+    ImGui::BeginDisabled(Store::states[instance].working.load());
     ImGui::Checkbox("Enable", &config.farm);
 
     if(!config.farm)
     {
+      ImGui::EndDisabled();
       ImGui::EndTabItem();
       return;
     }
@@ -216,19 +183,22 @@ void GUI::farmUI(const std::string &instance)
     }
     ImGui::PopID();
 
+    ImGui::EndDisabled();
     ImGui::EndTabItem();
   }
 }
 
 void GUI::combineUI(const std::string &instance)
 {
-  WorkConfig &config = this->configs[instance];
+  WorkConfig &config = Store::configs[instance];
   if(ImGui::BeginTabItem("Combine"))
   {
+    ImGui::BeginDisabled(Store::states[instance].working.load());
     ImGui::Checkbox("Enable", &config.combine);
 
     if(!config.combine)
     {
+      ImGui::EndDisabled();
       ImGui::EndTabItem();
       return;
     }
@@ -287,6 +257,7 @@ void GUI::combineUI(const std::string &instance)
     if(config.selectedGems.empty())
     {
       ImGui::EndTabItem();
+      ImGui::EndDisabled();
       return;
     }
 
@@ -315,6 +286,107 @@ void GUI::combineUI(const std::string &instance)
 
     ImGui::Columns(1, nullptr, false);
 
+    ImGui::EndDisabled();
+    ImGui::EndTabItem();
+  }
+}
+
+void GUI::statesUI(const std::string &instance)
+{
+  ImGui::SeparatorText(("States for Instance: " + instance).c_str());
+  if(Store::states[instance].open.load())
+  {
+    RoundedTag("Window Open", green, black, green);
+  }
+  if(!Store::states[instance].open.load())
+  {
+    RoundedTag("Window Closed", red, white, red);
+  }
+  if(Store::states[instance].working.load())
+  {
+    ImGui::SameLine();
+    RoundedTag("Bot Working", green, black, green);
+  }
+  if(!Store::states[instance].working.load())
+  {
+    ImGui::SameLine();
+    RoundedTag("Bot Stopped", red, white, red);
+  }
+  if(!Store::states[instance].minimized.load())
+  {
+    ImGui::SameLine();
+    RoundedTag("Window Acessible", green, black, green);
+  }
+  if(Store::states[instance].minimized.load())
+  {
+    ImGui::SameLine();
+    RoundedTag("Window Minimized", red, white, red);
+  }
+  ImGui::Spacing();
+}
+
+void GUI::actionsUI(const std::string &instance)
+{
+  ImGui::SeparatorText("Actions");
+  ImGui::BeginDisabled(Store::states[instance].working.load());
+  if(ImGui::Button(ICON_FA_PLAY))
+  {
+    Store::states[instance].working.store(true);
+
+    std::thread(botThread, std::ref(instance)).detach();
+  }
+  ImGui::EndDisabled();
+
+  ImGui::SameLine();
+  ImGui::BeginDisabled(!Store::states[instance].working.load());
+  if(ImGui::Button(ICON_FA_STOP))
+  {
+    Store::states[instance].working.store(false);
+  }
+  ImGui::EndDisabled();
+
+  ImGui::Spacing();
+}
+
+void GUI::summaryUI(const std::string &instance)
+{
+  if(ImGui::BeginTabItem("Summary"))
+  {
+    if(!Store::states[instance].working.load())
+    {
+      const char *text = "Bot is not working on this instance";
+
+      ImVec2 textSize = ImGui::CalcTextSize(text);
+      ImVec2 contentWindowSize = ImGui::GetContentRegionAvail();
+      ImVec2 textPosition = ImVec2((contentWindowSize.x - textSize.x) * 0.5f, (contentWindowSize.y - textSize.y) * 0.5f);
+
+      // Get the current cursor position
+      ImVec2 cursorPos = ImGui::GetCursorPos();
+
+      // Set the cursor position to center the text
+      ImGui::SetCursorPos(ImVec2(cursorPos.x + textPosition.x, cursorPos.y + textPosition.y));
+
+      ImGui::Text(text);
+
+      ImGui::EndTabItem();
+      return;
+    }
+
+    Store::mutexes[instance].lock();
+
+    Summary &summary = Store::summaries[instance];
+
+    ImGui::Text(("Time: " + summary.time).c_str());
+    ImGui::Text(("MS: " + summary.ms).c_str());
+    ImGui::Text(("ActionsPerSecond: " + summary.actionsPerSecond).c_str());
+    ImGui::Text(("Routine: " + summary.routine).c_str());
+    ImGui::Text(("Location: " + summary.location).c_str());
+    ImGui::Text(("Next Action: " + summary.nextAction).c_str());
+    ImGui::Text(("Swords: " + summary.swords).c_str());
+    ImGui::Text(("Potions: " + summary.potions).c_str());
+
+    Store::mutexes[instance].unlock();
+
     ImGui::EndTabItem();
   }
 }
@@ -336,8 +408,10 @@ void GUI::cleanup()
 {
   this->destroy();
 
-  for(auto &[index, state] : instanceStates)
+  // This makes the bot threads close safely
+  for(auto &instance : instances)
   {
+    InstanceState &state = Store::states[instance];
     state.open.store(false);
     state.working.store(false);
     state.minimized.store(true);
@@ -348,7 +422,8 @@ void GUI::cleanup()
 
 void GUI::update()
 {
-  if(Application::time.hasPassed("InstancesUpdate", 500))
+  // Update the list of instances each 0.5 seconds
+  if(tempo.hasPassed("InstancesUpdate", 500))
   {
     std::vector<std::string> instanceNames = Emulator::list();
 
@@ -358,26 +433,27 @@ void GUI::update()
       if(std::find(this->instances.begin(), this->instances.end(), instance) == this->instances.end())
       {
         this->instances.push_back(instance);
-        this->instanceStates[instance] = InstanceState{true, false, false};
+        Store::states[instance] = InstanceState{true, false, false};
+        Store::configs[instance] = WorkConfig{};
+        Store::summaries[instance] = Summary{};
       }
     }
   }
 
+  // Update the instance states, check if the window is closed or minimized
   for(auto &instance : this->instances)
   {
     HWND hwnd = FindWindow(nullptr, instance.c_str());
 
-    std::lock_guard<std::mutex> lock(this->instanceMutexes[instance]);
-
     // Window not found, instance is closed
     if(!hwnd)
     {
-      this->instanceStates[instance].open.store(false);
-      this->instanceStates[instance].working.store(false);
+      Store::states[instance].open.store(false);
+      Store::states[instance].working.store(false);
       continue;
     }
 
-    this->instanceStates[instance].open.store(true);
+    Store::states[instance].open.store(true);
 
     RECT rect;
     GetClientRect(hwnd, &rect);
@@ -385,15 +461,15 @@ void GUI::update()
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
 
-    // Window is minimized, cant send message events i think so
+    // Window is minimized, cant send message events
     if(width == 0 || height == 0)
     {
-      this->instanceStates[instance].minimized.store(true);
-      this->instanceStates[instance].working.store(false);
+      Store::states[instance].minimized.store(true);
+      Store::states[instance].working.store(false);
       continue;
     }
 
-    this->instanceStates[instance].minimized.store(false);
+    Store::states[instance].minimized.store(false);
   }
 }
 
@@ -401,9 +477,13 @@ void GUI::init()
 {
   this->loadFonts();
   this->instances = Emulator::list();
+  std::sort(this->instances.begin(), this->instances.end());
 
+  // Initialize the instance states
   for(auto &instance : this->instances)
   {
-    this->instanceStates[instance] = InstanceState{true, false, false};
+    Store::states[instance] = InstanceState{true, false, false};
+    Store::configs[instance] = WorkConfig{};
+    Store::summaries[instance] = Summary{};
   }
 }

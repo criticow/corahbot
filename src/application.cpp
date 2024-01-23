@@ -1,7 +1,6 @@
 #include "application.hpp"
 
-Texture2D Application::gemsTexture;
-Time Application::time;
+Temporizer Application::tempo;
 
 Application::Application(int width, int height, const char *title)
 {
@@ -31,21 +30,16 @@ void Application::render()
 
 void Application::update()
 {
-  this->time.update();
+  this->tempo.update();
   this->input.update(this->window);
   this->window.updateViewport();
-
-  if(time.justUpdated)
-  {
-    this->window.setTitle(std::format("{:.2f} ms {:.2f} fps", this->time.ms, this->time.fps));
-  }
 }
 
 void Application::setup()
 {
   this->gui.setup(this->window);
   this->gui.init();
-  Bot::loadMarkers();
+  Store::loadMarkers();
 }
 
 void Application::appLoop()

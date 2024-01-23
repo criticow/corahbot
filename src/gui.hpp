@@ -5,27 +5,27 @@
 #include <chrono>
 #include <opencv2/opencv.hpp>
 #include "bot.hpp"
+#include "store.hpp"
 
 class Application;
 
 class GUI : public BaseGUI
 {
   public:
-  std::unordered_map<std::string, InstanceState> instanceStates;
-  std::unordered_map<std::string, std::mutex> instanceMutexes;
-
-  std::vector<std::string> instances;
-
   GUI() : BaseGUI(){};
   virtual void renderUI() override;
-  void farmUI(const std::string &instance);
-  void combineUI(const std::string &instance);
   void cleanup();
   void update();
   void init();
 
-
   private:
-  std::unordered_map<std::string, WorkConfig> configs;
+  Temporizer tempo;
+  std::vector<std::string> instances;
+
   void loadFonts();
+  void farmUI(const std::string &instance);
+  void combineUI(const std::string &instance);
+  void statesUI(const std::string &instance);
+  void actionsUI(const std::string &instance);
+  void summaryUI(const std::string &instance);
 };

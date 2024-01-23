@@ -6,14 +6,14 @@
 #include "bot.hpp"
 #include <Windows.h>
 #include <psapi.h>
+#include "store.hpp"
 
 class Application
 {
   public:
   Window window;
-  static Time time;
+  static Temporizer tempo;
   Input input;
-  static Texture2D gemsTexture;
 
   Application(int width, int height, const char *title);
   void run();

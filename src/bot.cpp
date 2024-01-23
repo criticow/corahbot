@@ -1,86 +1,110 @@
 #include "bot.hpp"
 
-std::unordered_map<std::string, Marker> Bot::locationMarkers;
-std::unordered_map<std::string, Marker> Bot::potionsHomeMarkers;
-std::unordered_map<std::string, Marker> Bot::potionsCombatMarkers;
 
-void Bot::run(std::mutex &stateMutex, InstanceState &state, const std::string &instance)
+void Bot::run(const std::string &instance)
 {
-  std::string windowName = std::format("{} - {}", instance, Random::UUID());
+  int actionsPerSecond = 5;
+  WorkConfig &config = Store::configs[instance];
+  std::deque<std::string> routines = {"unknown"};
+  std::deque<std::string> actions = {"unknown"};
+
+  if(config.farm)
+  {
+    routines.push_front("farm");
+  }
+
+  if(config.combine)
+  {
+    routines.push_back("combine");
+  }
 
   while(true)
   {
-    std::lock_guard<std::mutex> lock(stateMutex);
+    std::mutex &instanceMutex = Store::mutexes[instance];
 
+    auto start = std::chrono::high_resolution_clock::now();
+
+    InstanceState &state = Store::states[instance];
+
+    // Check if the bot is working, window is open and not minimized
     if(!state.working.load() || !state.open.load() || state.minimized.load())
     {
       state.working.store(false);
       break;
     }
 
-    // Find in which part of the game we are
-    // bool combat = Emulator::compareImages(instance, locationMarkers["afk_btn"]);
-    // bool home = Emulator::compareImages(instance, locationMarkers["start_adv_btn"]);
+    std::string location = findLocation(instance);
 
-    // std::pair<bool, glm::ivec4> potionState(false, glm::ivec4(-1));
+    int swordAmount = -0;
+    int potionAmount = -0;
 
-    // if(combat)
-    // {
-    //   // Check if the health is less than 10 in combat scene
-    //   potionState = Emulator::find(instance, locationMarkers["potion_combat"], "potions_combat");
-    // }
+    if(location == "fighting")
+    {
+      handleFighting(instance, swordAmount, potionAmount);
+    }
 
-    // if(home)
-    // {
-    //   // Check if the health is less than 10 in home scene
-    //   potionState = Emulator::find(instance, locationMarkers["potion_home"], "potions_home");
-    //   // LOGGER_DEBUG("At home, potions bellow 10: {}", potionState.first);
-    // }
-  }
+    int totalSeconds = static_cast<int>(tempo.getTime());
 
+    int hours = totalSeconds / 3600;
+    int minutes = (totalSeconds % 3600) / 60;
+    int seconds = totalSeconds % 60;
 
-  LOGGER_DEBUG("Thread of instance {} ended", instance);
+    instanceMutex.lock();
 
-  if(FindWindow(nullptr, windowName.c_str()))
-  {
-    cv::destroyWindow(windowName);
+    Summary &summary = Store::summaries[instance];
+
+    summary.time = std::format("{:03d}:{:02d}:{:02d}", hours, minutes, seconds);
+    summary.location = location;
+    summary.routine = routines[0];
+    summary.nextAction = actions[0];
+    summary.swords = swordAmount == -1 ? "unknown" : std::to_string(swordAmount);
+    summary.potions = potionAmount == -1 ? "unknown" : std::to_string(potionAmount);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    int hasTimeLeft = duration.count() < 1000 / actionsPerSecond;
+
+    summary.ms = std::to_string(duration.count());
+    summary.actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
+
+    instanceMutex.unlock();
+
+    if(hasTimeLeft)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds((1000 / actionsPerSecond) - duration.count()));
+    }
   }
 }
 
-void Bot::loadMarkers()
+std::string Bot::findLocation(const std::string &instance)
 {
-  LOGGER_DEBUG("Loading Markers");
-  parseMaker("data/markers/locations.json", locationMarkers);
-  LOGGER_DEBUG("Locations - {}", locationMarkers.size());
-  // parseMaker("data/markers/potions_home.json", potionsHomeMarkers);
-  // LOGGER_DEBUG("Potions Home - {}", potionsHomeMarkers.size());
-  // parseMaker("data/markers/potions_combat.json", potionsCombatMarkers);
-  // LOGGER_DEBUG("Potions Combat - {}", potionsCombatMarkers.size());
+  std::string location = "unknown";
+
+  for(auto &[name, marker] : Store::locationMarkers)
+  {
+    if(Emulator::compareImages(instance, marker))
+    {
+      location = marker.location;
+      break;
+    }
+  }
+
+  return location;
 }
 
-void Bot::parseMaker(const char *markerPath, std::unordered_map<std::string, Marker> &markersMap)
+void Bot::handleFighting(const std::string &instance, int &swords, int &potions)
 {
-  std::string json = readFile(markerPath);
+  std::pair<bool, glm::ivec4> swordsRes = Emulator::find(instance, Store::atlasMarkers["sword_btn"], "sword_atlas");
+  std::pair<bool, glm::ivec4> potionRes = Emulator::find(instance, Store::atlasMarkers["potion_combat"], "potion_atlas");
 
-  rapidjson::Document document;
-  document.Parse(json.c_str());
-
-  ASSERT(document.IsObject(), "Error parsing {} JSON", markerPath);
-
-  std::string version = document["version"].GetString();
-  const rapidjson::Value &markersArray = document["markers"].GetArray();
-
-  for(rapidjson::SizeType i = 0; i < markersArray.Size(); i++)
+  if(swordsRes.first)
   {
-    const rapidjson::Value &marker = markersArray[i];
+    swords = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
+  }
 
-    markersMap[marker["name"].GetString()] = Marker(
-      marker["name"].GetString(),
-      marker["location"].GetString(),
-      marker["x"].GetInt(),
-      marker["y"].GetInt(),
-      marker["width"].GetInt(),
-      marker["height"].GetInt()
-    );
+  if(potionRes.first)
+  {
+    potions = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
   }
 }
