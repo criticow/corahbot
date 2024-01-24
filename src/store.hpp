@@ -4,6 +4,12 @@
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
 
+struct Monster
+{
+  std::string name;
+  std::string displayName;
+};
+
 struct Marker
 {
   std::string name;
@@ -58,8 +64,10 @@ struct WorkConfig
     {4, false, "Opal", ImVec4(0 / 255.0f, 70 / 255.0f, 250 / 255.0f, 1.0f)},
     {5, false, "Opal (C)", ImVec4(0 / 255.0f, 70 / 255.0f, 250 / 255.0f, 1.0f)}
   };
-  int selectedPortal = 0;
-  int selectedMonster = 0;
+  std::string selectedPortal = "dekdun";
+  int selectedMonster = 5;
+  int swordsThreshold = 25;
+  int potionsThreshold = 10;
 };
 
 struct Summary
@@ -83,7 +91,10 @@ class Store
   static std::unordered_map<std::string, Summary> summaries;
 
   static std::unordered_map<std::string, Marker> locationMarkers;
-  static std::unordered_map<std::string, Marker> atlasMarkers;
+  static std::unordered_map<std::string, Marker> positionMarkers;
+
+  static std::unordered_map<std::string, std::string> portals;
+  static std::unordered_map<std::string, std::vector<Monster>> monsters;
 
   static std::unordered_map<std::string, int> swordsMap;
   static std::unordered_map<std::string, int> potionsMap;

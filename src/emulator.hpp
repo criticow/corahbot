@@ -6,6 +6,7 @@
 #include <Psapi.h>
 #include <wingdi.h>
 #include <opencv2/opencv.hpp>
+#include "store.hpp"
 
 #define CORAH_PACKAGE_NAME "com.coorangar.corah"
 
@@ -16,11 +17,15 @@ class Emulator
   public:
 
   static void arrange();
+  // static std::vector<std::string> listInstances();
   static std::vector<std::string> list();
+
   static void launch(int index);
-  static void runapp(int index, const std::string &packageName);
-  static void quit(int index);
+  static void runapp(const std::string &windowTitle, const std::string &packageName);
+  static void killappall(const std::string &windowTitle);
+  static void quit(const std::string &windowTitle);
   static void click(const std::string &windowTitle, glm::ivec2 point);
+  static void click(const std::string &windowTitle, Marker &marker);
 
   static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, const std::string &needlePath, float threshold);
   static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, Marker marker , const std::string &haystackPath);

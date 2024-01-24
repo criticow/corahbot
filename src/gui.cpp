@@ -1,10 +1,6 @@
 #include "gui.hpp"
 #include "application.hpp"
 
-// START STATIC MEMBERS INITIALIZATION
-// std::unordered_map<std::string, WorkConfig> GUI::configs;
-// END STATIC MEMBERS INITIALIZATION
-
 ImVec4 yellow(1.0f, 0.9f, 0.2f, 1.0f);
 ImVec4 orange(0.99f, 0.69f, 0.26f, 1.0f);
 ImVec4 white(1.0f, 1.0f, 1.0f, 1.0f);
@@ -12,21 +8,6 @@ ImVec4 black(0.0f, 0.0f, 0.0f, 1.0f);
 ImVec4 green(0.0f, 1.0f, 0.0f, 1.0f);
 ImVec4 red(1.0f, 0.0f, 0.0f, 1.0f);
 ImVec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
-
-std::vector<std::string> portals{
-  "Ranhain",
-  "Dekdun",
-  // "Vulcardi",
-  // "Iceroost",
-  // "Forilon",
-  // "Airos",
-  // "Mitron"
-};
-
-std::unordered_map<std::string, std::vector<std::string>> monsters{
-  {"Ranhain", {"Bear (Lv.3)", "Giant Ant (Lv.8)", "Chinavia (Lv.15)", "Enraged Turtle (Lv.23)", "Goblin Thief (Lv.26)", "Scavanger (Lv.32)", "Amphnaly (Lv.40)", "Goblin Chief (Lv.50)"}},
-  {"Dekdun", {"Skeleton Worker (Lv.60)", "Lost Amummy (Lv.70)", "Skeleton Captain (Lv.80)", "Skeleton Wizard (Lv.85)", "Skeleton Thief (Lv.90)", "Thia (Lv.100)", "Skeleton King (Lv.105)" }}
-};
 
 void botThread(const std::string &instance)
 {
@@ -66,9 +47,9 @@ void GUI::renderUI()
   ImGui::SetWindowSize(ImVec2(windowSize.x - statsWindowWidth, baseWindowHeight));
   ImGui::SeparatorText("General");
 
-  if(ImGui::Button("Refresh"))
+  if(ImGui::Button("Vsync"))
   {
-    this->instances = Emulator::list();
+    Application::toggleVsync();
   }
 
   ImGui::End();
@@ -127,11 +108,11 @@ void GUI::renderUI()
 void GUI::farmUI(const std::string &instance)
 {
   WorkConfig &config = Store::configs[instance];
-  std::vector<std::string> &monsterList = monsters[portals[config.selectedPortal]];
 
   if(ImGui::BeginTabItem("Farm"))
   {
-    ImGui::BeginDisabled(Store::states[instance].working.load());
+    InstanceState &state = Store::states[instance];
+    ImGui::BeginDisabled(state.working.load());
     ImGui::Checkbox("Enable", &config.farm);
 
     if(!config.farm)
@@ -141,16 +122,30 @@ void GUI::farmUI(const std::string &instance)
       return;
     }
 
+    std::unordered_map<std::string, std::string> &portals = Store::portals;
+    std::unordered_map<std::string, std::vector<Monster>> &monsters = Store::monsters;
+
+    std::vector<Monster> &monsterList = monsters[config.selectedPortal];
+    
+    ImGui::SetNextItemWidth(35);
+    ImGui::InputInt("Swords Threshold", &config.swordsThreshold, 0, 50);
+    config.swordsThreshold = std::clamp(config.swordsThreshold, 0, 50);
+
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(35);
+    ImGui::InputInt("Potions Threshold", &config.potionsThreshold, 0, 29);
+    config.potionsThreshold = std::clamp(config.potionsThreshold, 0, 29);
+
     ImGui::PushID(0);
     ImGui::Text("Portal");
     if(ImGui::BeginCombo(" ", portals[config.selectedPortal].c_str(), ImGuiComboFlags_WidthFitPreview))
     {
-      for(size_t i = 0; i < portals.size(); i++)
+      for(auto &[key, portal] : portals)
       {
-        const bool isSelected = (config.selectedPortal == i);
-        if(ImGui::Selectable(portals[i].c_str(), isSelected))
+        const bool isSelected = (config.selectedPortal == key);
+        if(ImGui::Selectable(portal.c_str(), isSelected))
         {
-          config.selectedPortal = i;
+          config.selectedPortal = key;
         }
 
         if(isSelected)
@@ -164,12 +159,12 @@ void GUI::farmUI(const std::string &instance)
 
     ImGui::PushID(1);
     ImGui::Text("Monster");
-    if(ImGui::BeginCombo(" ", monsterList[config.selectedMonster].c_str(), ImGuiComboFlags_WidthFitPreview))
+    if(ImGui::BeginCombo(" ", monsterList[config.selectedMonster].displayName.c_str(), ImGuiComboFlags_WidthFitPreview))
     {
       for(size_t i = 0; i < monsterList.size(); i++)
       {
         const bool isSelected = (config.selectedMonster == i);
-        if(ImGui::Selectable(monsterList[i].c_str(), isSelected))
+        if(ImGui::Selectable(monsterList[i].displayName.c_str(), isSelected))
         {
           config.selectedMonster = i;
         }
@@ -294,30 +289,32 @@ void GUI::combineUI(const std::string &instance)
 void GUI::statesUI(const std::string &instance)
 {
   ImGui::SeparatorText(("States for Instance: " + instance).c_str());
-  if(Store::states[instance].open.load())
+  InstanceState &state = Store::states[instance];
+
+  if(state.open.load())
   {
     RoundedTag("Window Open", green, black, green);
   }
-  if(!Store::states[instance].open.load())
+  if(!state.open.load())
   {
     RoundedTag("Window Closed", red, white, red);
   }
-  if(Store::states[instance].working.load())
+  if(state.working.load())
   {
     ImGui::SameLine();
     RoundedTag("Bot Working", green, black, green);
   }
-  if(!Store::states[instance].working.load())
+  if(!state.working.load())
   {
     ImGui::SameLine();
     RoundedTag("Bot Stopped", red, white, red);
   }
-  if(!Store::states[instance].minimized.load())
+  if(!state.minimized.load())
   {
     ImGui::SameLine();
     RoundedTag("Window Acessible", green, black, green);
   }
-  if(Store::states[instance].minimized.load())
+  if(state.minimized.load())
   {
     ImGui::SameLine();
     RoundedTag("Window Minimized", red, white, red);
@@ -328,20 +325,20 @@ void GUI::statesUI(const std::string &instance)
 void GUI::actionsUI(const std::string &instance)
 {
   ImGui::SeparatorText("Actions");
-  ImGui::BeginDisabled(Store::states[instance].working.load());
+  InstanceState &state = Store::states[instance];
+  ImGui::BeginDisabled(state.working.load());
   if(ImGui::Button(ICON_FA_PLAY))
   {
-    Store::states[instance].working.store(true);
-
+    state.working.store(true);
     std::thread(botThread, std::ref(instance)).detach();
   }
   ImGui::EndDisabled();
 
   ImGui::SameLine();
-  ImGui::BeginDisabled(!Store::states[instance].working.load());
+  ImGui::BeginDisabled(!state.working.load());
   if(ImGui::Button(ICON_FA_STOP))
   {
-    Store::states[instance].working.store(false);
+    state.working.store(false);
   }
   ImGui::EndDisabled();
 
@@ -350,6 +347,7 @@ void GUI::actionsUI(const std::string &instance)
 
 void GUI::summaryUI(const std::string &instance)
 {
+  #ifndef NDEBUG
   if(ImGui::BeginTabItem("Summary"))
   {
     if(!Store::states[instance].working.load())
@@ -389,6 +387,7 @@ void GUI::summaryUI(const std::string &instance)
 
     ImGui::EndTabItem();
   }
+  #endif
 }
 
 void GUI::loadFonts()
@@ -444,16 +443,17 @@ void GUI::update()
   for(auto &instance : this->instances)
   {
     HWND hwnd = FindWindow(nullptr, instance.c_str());
+    InstanceState &state = Store::states[instance];
 
     // Window not found, instance is closed
     if(!hwnd)
     {
-      Store::states[instance].open.store(false);
-      Store::states[instance].working.store(false);
+      state.open.store(false);
+      state.working.store(false);
       continue;
     }
 
-    Store::states[instance].open.store(true);
+    state.open.store(true);
 
     RECT rect;
     GetClientRect(hwnd, &rect);
@@ -464,12 +464,12 @@ void GUI::update()
     // Window is minimized, cant send message events
     if(width == 0 || height == 0)
     {
-      Store::states[instance].minimized.store(true);
-      Store::states[instance].working.store(false);
+      state.minimized.store(true);
+      state.working.store(false);
       continue;
     }
 
-    Store::states[instance].minimized.store(false);
+    state.minimized.store(false);
   }
 }
 

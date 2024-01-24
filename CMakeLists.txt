@@ -7,7 +7,7 @@ project(corahbot)
 
 file(GLOB_RECURSE SOURCE "src/*.cpp" "src/*.hpp")
 
-add_executable(${PROJECT_NAME} ${SOURCE})
+add_executable(${PROJECT_NAME} ${SOURCE} resources.rc)
 
 set(GLBASE_BUILD_TESTS OFF)
 
@@ -42,3 +42,9 @@ add_custom_target(
   copy_data_folder ALL
   DEPENDS ${DATA_DESTINATION}
 )
+
+# Check if it's a release build
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+  target_compile_definitions(${PROJECT_NAME} PRIVATE -DNDEBUG)
+  set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+endif()

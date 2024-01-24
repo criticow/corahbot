@@ -13,10 +13,12 @@ class Application
   public:
   Window window;
   static Temporizer tempo;
+  static bool vSyncEnabled;
   Input input;
 
   Application(int width, int height, const char *title);
   void run();
+  static void toggleVsync();
 
   private:
   GUI gui;

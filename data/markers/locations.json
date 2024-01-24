@@ -2,7 +2,11 @@
     "markers": [
         {"name":"fighting","location":"fighting","x":98,"y":590,"width":19,"height":11},
         {"name":"menu_left","location":"menu_left","x":73,"y":188,"width":65,"height":11},
-        {"name":"menu_right","location":"menu_right","x":250,"y":274,"width":42,"height":11}
+        {"name":"menu_right","location":"menu_right","x":250,"y":274,"width":42,"height":11},
+        {"name":"login","location":"login","x":36,"y":380,"width":26,"height":14},
+        {"name":"home","location":"home","x":271,"y":68,"width":14,"height":14},
+        {"name":"refill_menu","location":"refill_menu","x":130,"y":223,"width":30,"height":9},
+        {"name":"map","location":"map","x":60,"y":40,"width":17,"height":17}
     ],
     "version": "0.0.1"
 }

@@ -1,0 +1,8 @@
+#include "winres.h"
+
+IDI_ICON16 ICON "data/icons/exe/icow_16x16.ico"
+IDI_ICON32 ICON "data/icons/exe/icow_32x32.ico"
+IDI_ICON48 ICON "data/icons/exe/icow_48x48.ico"
+IDI_ICON64 ICON "data/icons/exe/icow_64x64.ico"
+IDI_ICON128 ICON "data/icons/exe/icow_128x128.ico"
+IDI_ICON256 ICON "data/icons/exe/icow_256x256.ico"

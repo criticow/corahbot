@@ -6,7 +6,46 @@ std::unordered_map<std::string, WorkConfig> Store::configs;
 std::unordered_map<std::string, Summary> Store::summaries;
 
 std::unordered_map<std::string, Marker> Store::locationMarkers;
-std::unordered_map<std::string, Marker> Store::atlasMarkers;
+std::unordered_map<std::string, Marker> Store::positionMarkers;
+
+
+std::unordered_map<std::string, std::string> Store::portals{
+  { "ranhain", "Ranhain"},
+  { "dekdun", "Dekdun"},
+  // "Vulcardi",
+  // "Iceroost",
+  // "Forilon",
+  // "Airos",
+  // "Mitron"
+};
+
+std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
+  {
+    "ranhain",
+    {
+      { "bear", "Bear (Lv.3)" },
+      { "giant_ant", "Giant Ant (Lv.8)" },
+      { "chinavia", "Chinavia (Lv.15)" },
+      { "enraged_turtle", "Enraged Turtle (Lv.23)" },
+      { "goblin_thief", "Goblin Thief (Lv.26)" },
+      { "scavanger", "Scavanger (Lv.32)" },
+      { "amphnaly", "Amphnaly (Lv.40)" },
+      { "goblin_chief", "Goblin Chief (Lv.50)" }
+    }
+  },
+  {
+    "dekdun",
+    {
+      { "skeleton_worker", "Skeleton Worker (Lv.60)" },
+      { "lost_amummy", "Lost Amummy (Lv.70)" },
+      { "skeleton_captain", "Skeleton Captain (Lv.80)" },
+      { "skeleton_wizard", "Skeleton Wizard (Lv.85)" },
+      { "skeleton_thief", "Skeleton Thief (Lv.90)" },
+      { "thia", "Thia (Lv.100)" },
+      { "skeleton_king", "Skeleton King (Lv.105)" }
+    }
+  }
+};
 
 std::unordered_map<std::string, int> Store::swordsMap{
   {"00", -1},
@@ -101,8 +140,8 @@ void Store::loadMarkers()
   LOGGER_DEBUG("Loading Markers");
   parseMaker("data/markers/locations.json", locationMarkers);
   LOGGER_DEBUG("Location Markers - {}", locationMarkers.size());
-  parseMaker("data/markers/atlas.json", atlasMarkers);
-  LOGGER_DEBUG("Atlas Markers - {}", atlasMarkers.size());
+  parseMaker("data/markers/positions.json", positionMarkers);
+  LOGGER_DEBUG("Position Markers - {}", positionMarkers.size());
 }
 
 void Store::parseMaker(const char *markerPath, std::unordered_map<std::string, Marker> &markersMap)

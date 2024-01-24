@@ -40,11 +40,30 @@ void Emulator::arrange()
   }
 }
 
+
+// std::vector<std::string> Emulator::listInstances()
+// {
+//   std::vector<std::string> instances;
+//   EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&instances));
+//   return instances;
+// }
+
 std::vector<std::string> Emulator::list()
 {
-  std::vector<std::string> instances;
-  EnumWindows(EnumWindowsProc, reinterpret_cast<LPARAM>(&instances));
-  return instances;
+  std::string res = util::parseCMD(console, {"list"});
+  std::vector<std::string> list;
+
+  for(auto &line : util::split(res, '\n'))
+  {
+    // If it does not end with -1,-1 it is running
+    if(!line.ends_with("-1,-1"))
+    {
+      std::vector<std::string> values = util::split(line, ',');
+      list.push_back(values[2]);
+    }
+  }
+
+  return list;
 }
 
 void Emulator::launch(int index)
@@ -57,9 +76,9 @@ void Emulator::launch(int index)
   }
 }
 
-void Emulator::quit(int index)
+void Emulator::quit(const std::string &windowTitle)
 {
-  std::string res = util::parseCMD(console, {"quit", std::format("-index:{}", index)});
+  std::string res = util::parseCMD(console, {"quit", "-name:" + windowTitle});
 
   if(!res.empty())
   {
@@ -76,8 +95,19 @@ void Emulator::click(const std::string &windowTitle, glm::ivec2 point)
   // Send left mouse button down message
   SendMessage(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, lParam);
 
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
   // Send left mouse button up message
   SendMessage(hWnd, WM_LBUTTONUP, 0, lParam);
+
+  // LOGGER_DEBUG("Clicked: {}, {}", point.x, point.y);
+}
+
+void Emulator::click(const std::string & windowTitle, Marker & marker)
+{
+  int x = Random::choose(marker.x, marker.x + marker.width);
+  int y = Random::choose(marker.y, marker.y + marker.height);
+  click(windowTitle, glm::ivec2(x, y));
 }
 
 std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle)
@@ -147,9 +177,19 @@ bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
   return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
 }
 
-void Emulator::runapp(int index, const std::string &packagename)
+void Emulator::runapp(const std::string &windowTitle, const std::string &packagename)
 {
-  std::string res = util::parseCMD(std::format("{} runapp -index:{} -packagename:{}", console, index, packagename));
+  std::string res = util::parseCMD(console, {"runapp", "-name:" + windowTitle, "-packagename:" + packagename});
+
+  if(!res.empty())
+  {
+    LOGGER_DEBUG(res);
+  }
+}
+
+void Emulator::killappall(const std::string & windowTitle)
+{
+  std::string res = util::parseCMD(console, {"killappall", "-name:" + windowTitle});
 
   if(!res.empty())
   {
