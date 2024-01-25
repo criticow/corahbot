@@ -136,7 +136,7 @@ std::pair<bool, glm::ivec4> Emulator::find(const std::string &windowTitle, Marke
   cv::Mat needle;
   cv::cvtColor(image, needle, cv::COLOR_BGR2GRAY);
 
-  cv::Mat haystack = cv::imread("data/haystacks/" + haystackPath + ".png", cv::IMREAD_GRAYSCALE);
+  cv::Mat haystack = cv::imread("data/images/" + haystackPath + ".png", cv::IMREAD_GRAYSCALE);
 
   return find(haystack, needle);
 }
@@ -166,7 +166,7 @@ void Emulator::drawRectangles(cv::Mat &canvas, const std::vector<glm::ivec4> &po
 
 bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
 {
-  cv::Mat image1 = cv::imread("data/needles/" + marker.name + ".png");
+  cv::Mat image1 = cv::imread("data/images/" + marker.location + "/" + marker.name + ".png");
   cv::Mat image2 = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
 
   cv::Mat diff;
@@ -177,9 +177,9 @@ bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
   return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
 }
 
-void Emulator::runapp(const std::string &windowTitle, const std::string &packagename)
+void Emulator::runapp(const std::string &windowTitle, const std::string &packageName)
 {
-  std::string res = util::parseCMD(console, {"runapp", "-name:" + windowTitle, "-packagename:" + packagename});
+  std::string res = util::parseCMD(console, {"runapp", "-name:" + windowTitle, "-packagename:" + packageName});
 
   if(!res.empty())
   {
@@ -190,6 +190,16 @@ void Emulator::runapp(const std::string &windowTitle, const std::string &package
 void Emulator::killappall(const std::string & windowTitle)
 {
   std::string res = util::parseCMD(console, {"killappall", "-name:" + windowTitle});
+
+  if(!res.empty())
+  {
+    LOGGER_DEBUG(res);
+  }
+}
+
+void Emulator::killapp(const std::string &windowTitle, const std::string &packageName)
+{
+  std::string res = util::parseCMD(console, {"killapp", "-name:" + windowTitle, "-packagename:" + packageName});
 
   if(!res.empty())
   {

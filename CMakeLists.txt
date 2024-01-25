@@ -48,3 +48,14 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
   target_compile_definitions(${PROJECT_NAME} PRIVATE -DNDEBUG)
   set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 endif()
+
+set(generate_macros_script "generate_macros.py")
+
+find_package(Python REQUIRED)
+
+execute_process(
+  COMMAND ${Python_EXECUTABLE} ${generate_macros_script}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+  RESULT_VARIABLE python_script_result
+  OUTPUT_VARIABLE python_script_output
+)

@@ -421,24 +421,6 @@ void GUI::cleanup()
 
 void GUI::update()
 {
-  // Update the list of instances each 0.5 seconds
-  if(tempo.hasPassed("InstancesUpdate", 500))
-  {
-    std::vector<std::string> instanceNames = Emulator::list();
-
-    for(auto &instance : instanceNames)
-    {
-      // Insert the new item on the list only if does not already exists
-      if(std::find(this->instances.begin(), this->instances.end(), instance) == this->instances.end())
-      {
-        this->instances.push_back(instance);
-        Store::states[instance] = InstanceState{true, false, false};
-        Store::configs[instance] = WorkConfig{};
-        Store::summaries[instance] = Summary{};
-      }
-    }
-  }
-
   // Update the instance states, check if the window is closed or minimized
   for(auto &instance : this->instances)
   {

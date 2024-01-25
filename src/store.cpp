@@ -8,6 +8,7 @@ std::unordered_map<std::string, Summary> Store::summaries;
 std::unordered_map<std::string, Marker> Store::locationMarkers;
 std::unordered_map<std::string, Marker> Store::positionMarkers;
 
+std::unordered_map<std::string, std::unordered_map<std::string, Marker>> Store::markers;
 
 std::unordered_map<std::string, std::string> Store::portals{
   { "ranhain", "Ranhain"},
@@ -137,15 +138,18 @@ std::unordered_map<std::string, int> Store::potionsMap{
 
 void Store::loadMarkers()
 {
-  LOGGER_DEBUG("Loading Markers");
-  parseMaker("data/markers/locations.json", locationMarkers);
-  LOGGER_DEBUG("Location Markers - {}", locationMarkers.size());
-  parseMaker("data/markers/positions.json", positionMarkers);
-  LOGGER_DEBUG("Position Markers - {}", positionMarkers.size());
+  LOGGER_DEBUG("==== Started Loading Markers ====");
+  std::filesystem::path markersDir("data/markers");
+  for(auto &entry : std::filesystem::directory_iterator(markersDir))
+  {
+    parseMarker(entry.path().string());
+  }
+  LOGGER_DEBUG("==== Finished Loading Markers ====");
 }
 
-void Store::parseMaker(const char *markerPath, std::unordered_map<std::string, Marker> &markersMap)
+void Store::parseMarker(const std::string &markerPath)
 {
+  std::unordered_map<std::string, Marker> markersMap;
   std::string json = readFile(markerPath);
 
   rapidjson::Document document;
@@ -155,6 +159,18 @@ void Store::parseMaker(const char *markerPath, std::unordered_map<std::string, M
 
   std::string version = document["version"].GetString();
   const rapidjson::Value &markersArray = document["markers"].GetArray();
+  const rapidjson::Value &identifier = document["identifier"].GetObject();
+
+  Marker marker{
+    identifier["name"].GetString(),
+    identifier["location"].GetString(),
+    identifier["x"].GetInt(),
+    identifier["y"].GetInt(),
+    identifier["width"].GetInt(),
+    identifier["height"].GetInt()
+  };
+
+  markersMap[marker.name] = marker;
 
   for(rapidjson::SizeType i = 0; i < markersArray.Size(); i++)
   {
@@ -169,4 +185,8 @@ void Store::parseMaker(const char *markerPath, std::unordered_map<std::string, M
       marker["height"].GetInt()
     );
   }
+
+  markers[identifier["name"].GetString()] = markersMap;
+
+  LOGGER_DEBUG("{} - {}", marker.name, markersMap.size());
 }

@@ -6,17 +6,17 @@ void Bot::run(const std::string &instance)
   int actionsPerSecond = 5;
   WorkConfig &config = Store::configs[instance];
 
-  std::string currentRoutine = BOT_ROUTINE_NONE;
-  std::string currentAction = BOT_ACTION_NONE;
+  std::string currentRoutine = CB_ROUTINE_NONE;
+  std::string currentAction = CB_ROUTINE_NONE;
 
   if(config.farm)
   {
-    currentRoutine = BOT_ROUTINE_FARM;
+    currentRoutine = CB_ROUTINE_FARM;
   }
 
-  if(config.combine && currentRoutine == BOT_ROUTINE_NONE)
+  if(config.combine && currentRoutine == CB_ROUTINE_NONE)
   {
-    currentRoutine = BOT_ROUTINE_COMBINE;
+    currentRoutine = CB_ROUTINE_COMBINE;
   }
 
   while(true)
@@ -26,6 +26,37 @@ void Bot::run(const std::string &instance)
     auto start = std::chrono::high_resolution_clock::now();
 
     InstanceState &state = Store::states[instance];
+
+    {
+      HWND hwnd = FindWindow(nullptr, instance.c_str());
+      InstanceState &state = Store::states[instance];
+
+      // Window not found, instance is closed
+      if(!hwnd)
+      {
+        state.open.store(false);
+        state.working.store(false);
+        break;
+      }
+
+      state.open.store(true);
+
+      RECT rect;
+      GetClientRect(hwnd, &rect);
+
+      int width = rect.right - rect.left;
+      int height = rect.bottom - rect.top;
+
+      // Window is minimized, cant send message events
+      if(width == 0 || height == 0)
+      {
+        state.minimized.store(true);
+        state.working.store(false);
+        break;
+      }
+
+      state.minimized.store(false);
+    }
 
     // Check if the bot is working, window is open and not minimized
     if(!state.working.load() || !state.open.load() || state.minimized.load())
@@ -39,39 +70,57 @@ void Bot::run(const std::string &instance)
     int swordAmount = 9999;
     int potionAmount = 9999;
 
-    if(location == BOT_LOCATION_FIGHTING)
+    if(location == CB_LOCATION_FIGHTING_FIGHTING)
     {
-      if(currentRoutine == BOT_ROUTINE_FARM && currentAction == BOT_ACTION_NONE)
+      if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_NONE)
       {
-        currentAction = BOT_ACTION_REFRESH_SWORDS;
+        currentAction = CB_ACTION_REFRESH_SWORDS;
       }
 
-      handleFighting(instance, currentAction, swordAmount, potionAmount);
+      handleFighting(instance, currentRoutine, currentAction, swordAmount, potionAmount);
     }
 
-    if(location == BOT_LOCATION_MENU_RIGHT)
+    if(location == CB_LOCATION_GEAR_GEAR)
     {
-      handleMenuLeft(instance, currentAction);
+      handleGear(instance, currentRoutine, currentAction);
     }
 
-    if(location == BOT_LOCATION_LOGIN)
+    if(location == CB_LOCATION_LOGIN_LOGIN)
     {
-      handleLogin(instance, currentAction);
+      handleLogin(instance, currentRoutine, currentAction);
     }
 
-    if(location == BOT_LOCATION_HOME)
+    if(location == CB_LOCATION_HOME_HOME)
     {
-      handleHome(instance, currentAction);
+      handleHome(instance, currentRoutine, currentAction);
     }
 
-    if(location == BOT_LOCATION_REFILL_MENU)
+    if(location == CB_LOCATION_REFILL_REFILL)
     {
-      handleRefillMenu(instance, currentAction);
+      handleRefill(instance, currentRoutine, currentAction);
     }
 
-    if(location == BOT_LOCATION_MAP)
+    if(location == CB_LOCATION_MAP_MAP)
     {
-      handleMap(instance, currentAction);
+      handleMap(instance, currentRoutine, currentAction);
+    }
+
+    if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
+    {
+      Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    if(location == CB_LOCATION_APP_CLOSED_APP_CLOSED)
+    {
+      Emulator::click(instance, Store::markers[CB_LOCATION_APP_CLOSED_APP_CLOSED][CB_LOCATION_APP_CLOSED_APP_CLOSED]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    }
+
+    if(location == CB_LOCATION_APP_CRASHED_APP_CRASHED)
+    {
+      Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -114,13 +163,13 @@ void Bot::run(const std::string &instance)
 
 std::string Bot::findLocation(const std::string &instance)
 {
-  std::string location = BOT_LOCATION_UNKNOWN;
+  std::string location = CB_LOCATION_UNKNOWN;
 
-  for(auto &[name, marker] : Store::locationMarkers)
+  for(auto &[name, markers] : Store::markers)
   {
-    if(Emulator::compareImages(instance, marker))
+    if(Emulator::compareImages(instance, markers[name]))
     {
-      location = marker.location;
+      location = markers[name].location;
       break;
     }
   }
@@ -128,10 +177,12 @@ std::string Bot::findLocation(const std::string &instance)
   return location;
 }
 
-void Bot::handleFighting(const std::string &instance, std::string &currentAction, int &swords, int &potions)
+void Bot::handleFighting(const std::string &instance, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions)
 {
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FIGHTING_FIGHTING];
+
   // START POTION ACTIONS
-  std::pair<bool, glm::ivec4> potionRes = Emulator::find(instance, Store::positionMarkers["potion_combat"], "potion_atlas");
+  std::pair<bool, glm::ivec4> potionRes = Emulator::find(instance, markers[CB_POSITION_FIGHTING_POTIONS], "atlas/potions");
 
   // If potions are not visible there is nothing more to do here
   if(!potionRes.first)
@@ -142,24 +193,22 @@ void Bot::handleFighting(const std::string &instance, std::string &currentAction
   WorkConfig &config = Store::configs[instance];
   potions = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
 
-  if(potions > config.potionsThreshold && currentAction == BOT_ACTION_REFRESH_POTIONS)
+  if(currentRoutine == CB_ROUTINE_FARM && potions > config.potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
   {
-    currentAction = BOT_ACTION_REFRESH_SWORDS;
+    currentAction = CB_ACTION_REFRESH_SWORDS;
   }
 
-  if(potions < config.potionsThreshold)
+  if(currentRoutine == CB_ROUTINE_FARM && potions < config.potionsThreshold)
   {
     // Open the options menu to start the refresh
-    currentAction = BOT_ACTION_REFRESH_POTIONS;
-    Emulator::killappall(instance);
+    currentAction = CB_ACTION_REFRESH_POTIONS;
+    Emulator::killapp(instance, CORAH_PACKAGE_NAME);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
-    Emulator::runapp(instance, CORAH_PACKAGE_NAME);
   }
   // END POTIONS ACTIONS
 
   // START SWORDS ACTIONS
-  Marker &swordBtn = Store::positionMarkers["sword_btn"];
-  std::pair<bool, glm::ivec4> swordsRes = Emulator::find(instance, swordBtn, "sword_atlas");
+  std::pair<bool, glm::ivec4> swordsRes = Emulator::find(instance, markers[CB_POSITION_FIGHTING_SWORDS], "atlas/swords");
   if(!swordsRes.first)
   {
     return;
@@ -167,99 +216,98 @@ void Bot::handleFighting(const std::string &instance, std::string &currentAction
   
   swords = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
 
-  if(swords < config.swordsThreshold && currentAction == BOT_ACTION_REFRESH_SWORDS)
+  if(currentRoutine == CB_ROUTINE_FARM && swords < config.swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
-    Emulator::click(instance, swordBtn);
-    // Wait 800ms after clicking
-    std::this_thread::sleep_for(std::chrono::milliseconds(800));
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   }
   // END SWORDS ACTIONS
 }
 
-void Bot::handleMenuLeft(const std::string & instance, std::string & currentAction)
+void Bot::handleGear(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
 {
-  if(currentAction == BOT_ACTION_REFRESH_POTIONS)
+  if(currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     // Should close
   }
 }
 
-void Bot::handleLogin(const std::string &instance, std::string &currentAction)
+void Bot::handleLogin(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
 {
-  bool res = Emulator::compareImages(instance, Store::locationMarkers["login"]);
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
+  bool res = Emulator::compareImages(instance, markers[CB_LOCATION_LOGIN_LOGIN]);
 
-  if(res)
+  if(currentRoutine == CB_ROUTINE_FARM && res)
   {
-    Marker &loginBtn = Store::positionMarkers["login_btn"];
-    Emulator::click(instance, loginBtn);
+    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_BTN]);
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 }
 
-void Bot::handleHome(const std::string &instance, std::string &currentAction)
+void Bot::handleHome(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
 {
-  bool shoudlRefill = Emulator::compareImages(instance, Store::positionMarkers["potion_home"]);
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_HOME_HOME];
+  bool shoudlRefill = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION]);
 
-  if(!shoudlRefill)
+  if(currentRoutine == CB_ROUTINE_FARM && !shoudlRefill)
   {
-    Marker &refilBtn = Store::positionMarkers["refill_btn"];
-
-    if(Emulator::compareImages(instance, refilBtn))
+    if(Emulator::compareImages(instance, markers[CB_POSITION_HOME_REFILL_BTN]))
     {
-      Emulator::click(instance, refilBtn);
+      Emulator::click(instance, markers[CB_POSITION_HOME_REFILL_BTN]);
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
+
+    return;
   }
 
-  Marker &homeStartBtn = Store::positionMarkers["home_start_btn"];
-  if(Emulator::compareImages(instance, homeStartBtn))
+  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_HOME_START_BTN]))
   {
-    Emulator::click(instance, homeStartBtn);
+    Emulator::click(instance, markers[CB_POSITION_HOME_START_BTN]);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
 }
 
-void Bot::handleRefillMenu(const std::string & instance, std::string & currentAction)
+void Bot::handleRefill(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
 {
-  Marker &maxBtnActive = Store::positionMarkers["max_btn_active"];
-  if(Emulator::compareImages(instance, maxBtnActive))
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_REFILL_REFILL];
+
+  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]))
   {
-    Emulator::click(instance, maxBtnActive);
+    Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]);
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
 
-  Marker &refilBtnActive = Store::positionMarkers["refill_btn_active"];
-  if(Emulator::compareImages(instance, refilBtnActive))
+  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]))
   {
-    Emulator::click(instance, refilBtnActive);
+    Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]);
     std::this_thread::sleep_for(std::chrono::milliseconds(1500));
   }
 
-  Marker &maxBtnInactive = Store::positionMarkers["max_btn_inactive"];
-  if(Emulator::compareImages(instance, maxBtnInactive))
+  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]))
   {
-    currentAction = BOT_ACTION_REFRESH_SWORDS;
-    Emulator::click(instance, Store::positionMarkers["refill_close_btn"]);
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]);
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
   }
 }
 
-void Bot::handleMap(const std::string &instance, std::string &currentAction)
+void Bot::handleMap(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
 {
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_MAP_MAP];
+
   WorkConfig &config = Store::configs[instance];
   Monster &monster = Store::monsters[config.selectedPortal][config.selectedMonster];
 
   // Check if it is not in the correct portal, to change location
-  if(!Emulator::compareImages(instance, Store::positionMarkers["map_" + config.selectedPortal]))
+  if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config.selectedPortal]))
   {
     LOGGER_DEBUG("It is not in the correct portal");
   }
 
-  Marker &monsterMarker = Store::positionMarkers["monster_" + monster.name];
-  if(Emulator::compareImages(instance, monsterMarker))
+  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[monster.name]))
   {
-    Emulator::click(instance, monsterMarker);
+    Emulator::click(instance, markers[monster.name]);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   }
 }

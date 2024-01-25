@@ -3,6 +3,8 @@
 #include <glb/glb.hpp>
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 struct Monster
 {
@@ -18,11 +20,30 @@ struct Marker
   int y;
   int width;
   int height;
+
+  std::string toJson()
+  {
+    rapidjson::Document document;
+    document.SetObject();
+
+    document.AddMember("name", rapidjson::StringRef(name.c_str()), document.GetAllocator());
+    document.AddMember("location", rapidjson::StringRef(location.c_str()), document.GetAllocator());
+    document.AddMember("x", x, document.GetAllocator());
+    document.AddMember("y", y, document.GetAllocator());
+    document.AddMember("width", width, document.GetAllocator());
+    document.AddMember("height", height, document.GetAllocator());
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+    document.Accept(writer);
+    return buffer.GetString();
+  }
 };
 
 struct InstanceState
 {
-  std::atomic<bool> open = false;
+  std::atomic<bool> open = true;
   std::atomic<bool> working = false;
   std::atomic<bool> minimized = false;
 
@@ -66,8 +87,8 @@ struct WorkConfig
   };
   std::string selectedPortal = "dekdun";
   int selectedMonster = 5;
-  int swordsThreshold = 25;
-  int potionsThreshold = 10;
+  int swordsThreshold = 15;
+  int potionsThreshold = 3;
 };
 
 struct Summary
@@ -92,6 +113,7 @@ class Store
 
   static std::unordered_map<std::string, Marker> locationMarkers;
   static std::unordered_map<std::string, Marker> positionMarkers;
+  static std::unordered_map<std::string, std::unordered_map<std::string, Marker>> markers;
 
   static std::unordered_map<std::string, std::string> portals;
   static std::unordered_map<std::string, std::vector<Monster>> monsters;
@@ -102,5 +124,5 @@ class Store
   static void loadMarkers();
 
   private:
-  static void parseMaker(const char *markerPath, std::unordered_map<std::string, Marker> &markersMap);
+  static void parseMarker(const std::string &markerPath);
 };
