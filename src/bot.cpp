@@ -12,14 +12,9 @@ void Bot::run(const std::string &instance)
   std::string currentAction = CB_ROUTINE_NONE;
 
   if(config.farm)
-  {
     currentRoutine = CB_ROUTINE_FARM;
-  }
-
-  if(config.combine && currentRoutine == CB_ROUTINE_NONE)
-  {
+  else if(config.combine && currentRoutine == CB_ROUTINE_NONE)
     currentRoutine = CB_ROUTINE_COMBINE;
-  }
 
   while(true)
   {
@@ -29,43 +24,20 @@ void Bot::run(const std::string &instance)
 
     InstanceState &state = Store::states[instance];
 
-    {
-      HWND hwnd = FindWindow(nullptr, instance.c_str());
-      InstanceState &state = Store::states[instance];
-
-      // Window not found, instance is closed
-      if(!hwnd)
-      {
-        state.open.store(false);
-        state.working.store(false);
-        break;
-      }
-
-      state.open.store(true);
-
-      RECT rect;
-      GetClientRect(hwnd, &rect);
-
-      int width = rect.right - rect.left;
-      int height = rect.bottom - rect.top;
-
-      // Window is minimized, cant send message events
-      if(width == 0 || height == 0)
-      {
-        state.minimized.store(true);
-        state.working.store(false);
-        break;
-      }
-
-      state.minimized.store(false);
-    }
-
     // Check if the bot is working, window is open and not minimized
     if(!state.working.load() || !state.open.load() || state.minimized.load())
     {
       state.working.store(false);
       break;
     }
+
+    // Sets the routine
+    if(config.farm && currentRoutine == CB_ROUTINE_NONE)
+      currentRoutine = CB_ROUTINE_FARM;
+    else if(config.combine && currentRoutine == CB_ROUTINE_NONE)
+      currentRoutine = CB_ROUTINE_COMBINE;
+    else
+      currentRoutine = CB_ROUTINE_NONE;
 
     std::string location = findLocation(instance);
 
@@ -75,37 +47,25 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_FIGHTING_FIGHTING)
     {
       if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_NONE)
-      {
         currentAction = CB_ACTION_REFRESH_SWORDS;
-      }
 
       handleFighting(instance, config, summary, currentRoutine, currentAction, swordAmount, potionAmount);
     }
 
     if(location == CB_LOCATION_GEAR_GEAR)
-    {
       handleGear(instance, config, summary, currentRoutine, currentAction);
-    }
 
     if(location == CB_LOCATION_LOGIN_LOGIN)
-    {
       handleLogin(instance, config, summary, currentRoutine, currentAction);
-    }
 
     if(location == CB_LOCATION_HOME_HOME)
-    {
       handleHome(instance, config, summary, currentRoutine, currentAction);
-    }
 
     if(location == CB_LOCATION_REFILL_REFILL)
-    {
       handleRefill(instance, config, summary, currentRoutine, currentAction);
-    }
 
     if(location == CB_LOCATION_MAP_MAP)
-    {
       handleMap(instance, config, summary, currentRoutine, currentAction);
-    }
 
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
@@ -155,9 +115,7 @@ void Bot::run(const std::string &instance)
 
     // This is so the bot takes n actionsPerSecond
     if(hasTimeLeft)
-    {
       std::this_thread::sleep_for(std::chrono::milliseconds((1000 / actionsPerSecond) - duration.count()));
-    }
   }
 }
 

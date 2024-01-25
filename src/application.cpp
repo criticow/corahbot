@@ -2,6 +2,7 @@
 
 Temporizer Application::tempo;
 bool Application::vSyncEnabled = false;
+Input Application::input;
 
 Application::Application(int width, int height, const char *title)
 {

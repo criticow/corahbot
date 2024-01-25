@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"inventory","location":"inventory","x":150,"y":52,"width":48,"height":9},
+  "markers": [
+    {"name":"inv_line1","location":"inventory","x":42,"y":321,"width":262,"height":48},
+    {"name":"inv_line2","location":"inventory","x":42,"y":377,"width":262,"height":48},
+    {"name":"inv_line3","location":"inventory","x":42,"y":432,"width":262,"height":48},
+    {"name":"inv_line4","location":"inventory","x":42,"y":487,"width":262,"height":48}
+  ]
+}

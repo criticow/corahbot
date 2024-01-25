@@ -14,7 +14,7 @@ class Application
   Window window;
   static Temporizer tempo;
   static bool vSyncEnabled;
-  Input input;
+  static Input input;
 
   Application(int width, int height, const char *title);
   void run();
