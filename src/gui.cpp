@@ -11,6 +11,81 @@ ImVec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
 
 int currentTab = 0;
 
+WorkConfig getConfig(const std::string &instance)
+{
+  WorkConfig workConfig{};
+  std::filesystem::path configPath = std::filesystem::path(getenv("USERPROFILE")) / ".corahbot";
+  // Load config
+  try
+  {
+    // Create the config folder if it does not exists
+    if(!std::filesystem::is_directory(configPath))
+    {
+      std::filesystem::create_directory(configPath);
+      std::filesystem::create_directory(std::filesystem::path(configPath / "instances"));
+    }
+
+    std::filesystem::path instanceFile = std::filesystem::path(configPath / "instances" / (instance + ".json"));
+    std::ifstream file(instanceFile);
+
+    if(file.is_open())
+    {
+      LOGGER_DEBUG("Loading config for instance: {}", instance);
+      std::ostringstream ss;
+      ss << file.rdbuf();
+
+      rapidjson::Document document;
+      document.Parse(ss.str().c_str());
+
+      if(document.IsObject())
+      {
+        workConfig.farm = document["farm"].GetBool();
+        workConfig.combine = document["combine"].GetBool();
+        workConfig.selectedPortal = document["selectedPortal"].GetString();
+        workConfig.swordsThreshold = document["swordsThreshold"].GetInt();
+        workConfig.potionsThreshold = document["potionsThreshold"].GetInt();
+        workConfig.selectedMonster = document["selectedMonster"].GetInt();
+      }
+
+      file.close();
+    }
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+  }
+
+  return workConfig;
+}
+
+void saveConfig(const std::string &instance, WorkConfig &config)
+{
+  std::filesystem::path configPath = std::filesystem::path(getenv("USERPROFILE")) / ".corahbot";
+  // Load config
+  try
+  {
+    // Create the config folder if it does not exists
+    if(!std::filesystem::is_directory(configPath))
+    {
+      std::filesystem::create_directory(configPath);
+      std::filesystem::create_directory(std::filesystem::path(configPath / "instances"));
+    }
+
+    std::filesystem::path instanceFile = std::filesystem::path(configPath / "instances" / (instance + ".json"));
+    std::ofstream file(instanceFile);
+
+    if(file.is_open())
+    {
+      file << config.toJson();
+      file.close();
+    }
+  }
+  catch(const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+  }
+}
+
 void botThread(const std::string &instance)
 {
   Bot bot;
@@ -325,6 +400,7 @@ void GUI::actionsUI(const std::string &instance)
   ImGui::BeginDisabled(state.working.load());
   if(ImGui::Button(ICON_FA_PLAY) || Application::input.pressed(ACTION_ACCEPT))
   {
+    saveConfig(instance, Store::configs[instance]);
     state.working.store(true);
     std::thread(botThread, std::ref(instance)).detach();
   }
@@ -417,15 +493,6 @@ void GUI::cleanup()
 
 void GUI::update()
 {
-  if(Application::input.pressed(KEY_1)) {currentTab = 0; LOGGER_DEBUG("1");}
-  if(Application::input.pressed(KEY_2)) {currentTab = 1;}
-  if(Application::input.pressed(KEY_3)) {currentTab = 2;}
-  if(Application::input.pressed(KEY_4)) {currentTab = 3;}
-  if(Application::input.pressed(KEY_5)) {currentTab = 4;}
-  if(Application::input.pressed(KEY_6)) {currentTab = 5;}
-  if(Application::input.pressed(KEY_7)) {currentTab = 6;}
-  if(Application::input.pressed(KEY_8)) {currentTab = 7;}
-  if(Application::input.pressed(KEY_9)) {currentTab = 8;}
 
   // if(this->tempo.hasPassed("InstancesUpdate", 500))
   // {
@@ -481,7 +548,7 @@ void GUI::update()
 void GUI::init()
 {
   ImGuiStyle &style = ImGui::GetStyle();
-  style.Colors[ImGuiCol_Tab] = ImVec4(0.5f, 0.0f, 0.0f, 0.7f); // Active tab color
+  style.Colors[ImGuiCol_Tab] = ImVec4(0.20f, 0.20f, 0.20f, 1.0f); // Active tab color
 
   this->loadFonts();
   this->instances = Emulator::list();
@@ -491,7 +558,7 @@ void GUI::init()
   for(auto &instance : this->instances)
   {
     Store::states[instance] = InstanceState{true, false, false};
-    Store::configs[instance] = WorkConfig{};
+    Store::configs[instance] = getConfig(instance);
     Store::summaries[instance] = Summary{};
   }
 }

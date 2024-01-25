@@ -89,6 +89,25 @@ struct WorkConfig
   int selectedMonster = 5;
   int swordsThreshold = 15;
   int potionsThreshold = 3;
+
+  std::string toJson()
+  {
+    rapidjson::Document document;
+    document.SetObject();
+
+    document.AddMember("farm", farm, document.GetAllocator());
+    document.AddMember("combine", combine, document.GetAllocator());
+    document.AddMember("selectedPortal", rapidjson::StringRef(selectedPortal.c_str()), document.GetAllocator());
+    document.AddMember("selectedMonster", selectedMonster, document.GetAllocator());
+    document.AddMember("swordsThreshold", swordsThreshold, document.GetAllocator());
+    document.AddMember("potionsThreshold", potionsThreshold, document.GetAllocator());
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+
+    document.Accept(writer);
+    return buffer.GetString();
+  }
 };
 
 struct Summary

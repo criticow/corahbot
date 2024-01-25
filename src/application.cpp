@@ -50,6 +50,8 @@ void Application::setup()
   this->gui.init();
   this->toggleVsync();
   Store::loadMarkers();
+
+
 }
 
 void Application::appLoop()
