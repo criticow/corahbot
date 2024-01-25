@@ -4,7 +4,9 @@
 void Bot::run(const std::string &instance)
 {
   int actionsPerSecond = 5;
+
   WorkConfig &config = Store::configs[instance];
+  Summary &summary = Store::summaries[instance];
 
   std::string currentRoutine = CB_ROUTINE_NONE;
   std::string currentAction = CB_ROUTINE_NONE;
@@ -77,32 +79,32 @@ void Bot::run(const std::string &instance)
         currentAction = CB_ACTION_REFRESH_SWORDS;
       }
 
-      handleFighting(instance, currentRoutine, currentAction, swordAmount, potionAmount);
+      handleFighting(instance, config, summary, currentRoutine, currentAction, swordAmount, potionAmount);
     }
 
     if(location == CB_LOCATION_GEAR_GEAR)
     {
-      handleGear(instance, currentRoutine, currentAction);
+      handleGear(instance, config, summary, currentRoutine, currentAction);
     }
 
     if(location == CB_LOCATION_LOGIN_LOGIN)
     {
-      handleLogin(instance, currentRoutine, currentAction);
+      handleLogin(instance, config, summary, currentRoutine, currentAction);
     }
 
     if(location == CB_LOCATION_HOME_HOME)
     {
-      handleHome(instance, currentRoutine, currentAction);
+      handleHome(instance, config, summary, currentRoutine, currentAction);
     }
 
     if(location == CB_LOCATION_REFILL_REFILL)
     {
-      handleRefill(instance, currentRoutine, currentAction);
+      handleRefill(instance, config, summary, currentRoutine, currentAction);
     }
 
     if(location == CB_LOCATION_MAP_MAP)
     {
-      handleMap(instance, currentRoutine, currentAction);
+      handleMap(instance, config, summary, currentRoutine, currentAction);
     }
 
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
@@ -136,8 +138,6 @@ void Bot::run(const std::string &instance)
     int seconds = totalSeconds % 60;
 
     instanceMutex.lock();
-
-    Summary &summary = Store::summaries[instance];
 
     summary.time = std::format("{:03d}:{:02d}:{:02d}", hours, minutes, seconds);
     summary.location = location;
@@ -177,7 +177,7 @@ std::string Bot::findLocation(const std::string &instance)
   return location;
 }
 
-void Bot::handleFighting(const std::string &instance, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions)
+void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FIGHTING_FIGHTING];
 
@@ -190,7 +190,6 @@ void Bot::handleFighting(const std::string &instance, std::string &currentRoutin
     return;
   }
 
-  WorkConfig &config = Store::configs[instance];
   potions = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
 
   if(currentRoutine == CB_ROUTINE_FARM && potions > config.potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
@@ -225,7 +224,7 @@ void Bot::handleFighting(const std::string &instance, std::string &currentRoutin
   // END SWORDS ACTIONS
 }
 
-void Bot::handleGear(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   if(currentAction == CB_ACTION_REFRESH_POTIONS)
   {
@@ -233,7 +232,7 @@ void Bot::handleGear(const std::string &instance, std::string &currentRoutine, s
   }
 }
 
-void Bot::handleLogin(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
   bool res = Emulator::compareImages(instance, markers[CB_LOCATION_LOGIN_LOGIN]);
@@ -245,7 +244,7 @@ void Bot::handleLogin(const std::string &instance, std::string &currentRoutine, 
   }
 }
 
-void Bot::handleHome(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleHome(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_HOME_HOME];
   bool shoudlRefill = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION]);
@@ -268,7 +267,7 @@ void Bot::handleHome(const std::string &instance, std::string &currentRoutine, s
   }
 }
 
-void Bot::handleRefill(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleRefill(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_REFILL_REFILL];
 
@@ -292,11 +291,10 @@ void Bot::handleRefill(const std::string &instance, std::string &currentRoutine,
   }
 }
 
-void Bot::handleMap(const std::string &instance, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleMap(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_MAP_MAP];
 
-  WorkConfig &config = Store::configs[instance];
   Monster &monster = Store::monsters[config.selectedPortal][config.selectedMonster];
 
   // Check if it is not in the correct portal, to change location

@@ -17,10 +17,10 @@ class Bot
   Temporizer tempo;
 
   std::string findLocation(const std::string &instance);
-  void handleFighting(const std::string &instance, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions);
-  void handleGear(const std::string &instance, std::string &currentRoutine, std::string &currentAction);
-  void handleLogin(const std::string &instance, std::string &currentRoutine, std::string &currentAction);
-  void handleHome(const std::string &instance, std::string &currentRoutine, std::string &currentAction);
-  void handleRefill(const std::string &instance, std::string &currentRoutine, std::string &currentAction);
-  void handleMap(const std::string &instance, std::string &currentRoutine, std::string &currentAction);
+  void handleFighting(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions);
+  void handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
+  void handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
+  void handleHome(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
+  void handleRefill(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
+  void handleMap(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
 };
