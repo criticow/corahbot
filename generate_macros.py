@@ -40,5 +40,11 @@ with open(generated_file, "w") as file:
   file.write('#define CB_ROUTINE_COMBINE "combine"\n')
   file.write('#define CB_LOCATION_UNKNOWN "unknown"\n')
 
+  file.write('\n')
+
+  file.write('// REFRESH MODES MACROS\n')
+  file.write('#define CB_REFRESH_MODE_LOGOUT "logout"\n')
+  file.write('#define CB_REFRESH_MODE_CLOSE "close"\n')
+
   for macro in macros:
     file.write(macro)

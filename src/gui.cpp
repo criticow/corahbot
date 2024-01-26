@@ -43,6 +43,7 @@ WorkConfig getConfig(const std::string &instance)
         workConfig.combine = document["combine"].GetBool();
         workConfig.selectedPortal = document["selectedPortal"].GetString();
         workConfig.swordsThreshold = document["swordsThreshold"].GetInt();
+        workConfig.refreshMode = document["refreshMode"].GetInt();
         workConfig.potionsThreshold = document["potionsThreshold"].GetInt();
         workConfig.selectedMonster = document["selectedMonster"].GetInt();
       }
@@ -242,6 +243,27 @@ void GUI::farmUI(const std::string &instance)
         if(ImGui::Selectable(monsterList[i].displayName.c_str(), isSelected))
         {
           config.selectedMonster = i;
+        }
+
+        if(isSelected)
+        {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+    ImGui::PopID();
+
+    ImGui::PushID(2);
+    ImGui::Text("Refresh Mode");
+    if(ImGui::BeginCombo(" ", Store::refreshModes[config.refreshMode].c_str(), ImGuiComboFlags_WidthFitPreview))
+    {
+      for(size_t i = 0; i < Store::refreshModes.size(); i++)
+      {
+        const bool isSelected = (config.refreshMode == i);
+        if(ImGui::Selectable(Store::refreshModes[i].c_str(), isSelected))
+        {
+          config.refreshMode = i;
         }
 
         if(isSelected)
@@ -454,6 +476,7 @@ void GUI::summaryUI(const std::string &instance)
     ImGui::Text(("Next Action: " + summary.nextAction).c_str());
     ImGui::Text(("Swords: " + summary.swords).c_str());
     ImGui::Text(("Potions: " + summary.potions).c_str());
+    ImGui::Text(("Crashs: " + summary.crashs).c_str());
 
     Store::mutexes[instance].unlock();
 

@@ -4,6 +4,7 @@
 void Bot::run(const std::string &instance)
 {
   int actionsPerSecond = 5;
+  int crashCounter = 0;
 
   WorkConfig &config = Store::configs[instance];
   Summary &summary = Store::summaries[instance];
@@ -36,7 +37,7 @@ void Bot::run(const std::string &instance)
       currentRoutine = CB_ROUTINE_FARM;
     else if(config.combine && currentRoutine == CB_ROUTINE_NONE)
       currentRoutine = CB_ROUTINE_COMBINE;
-    else
+    else if(!config.farm)
       currentRoutine = CB_ROUTINE_NONE;
 
     std::string location = findLocation(instance);
@@ -75,6 +76,7 @@ void Bot::run(const std::string &instance)
 
     if(location == CB_LOCATION_APP_CLOSED_APP_CLOSED)
     {
+      crashCounter++;
       Emulator::click(instance, Store::markers[CB_LOCATION_APP_CLOSED_APP_CLOSED][CB_LOCATION_APP_CLOSED_APP_CLOSED]);
       std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
@@ -105,7 +107,7 @@ void Bot::run(const std::string &instance)
     summary.nextAction = currentAction;
     summary.swords = swordAmount == 9999 ? "unknown" : std::to_string(swordAmount);
     summary.potions = potionAmount == 9999 ? "unknown" : std::to_string(potionAmount);
-
+    summary.crashs = std::to_string(crashCounter);
 
     summary.ms = std::to_string(duration.count());
     summary.actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
@@ -159,8 +161,16 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
   {
     // Open the options menu to start the refresh
     currentAction = CB_ACTION_REFRESH_POTIONS;
-    Emulator::killapp(instance, CORAH_PACKAGE_NAME);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    if(Store::refreshModes[config.refreshMode] == CB_REFRESH_MODE_LOGOUT)
+    {
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    }
+    else if (Store::refreshModes[config.refreshMode] == CB_REFRESH_MODE_CLOSE)
+    {
+      Emulator::killapp(instance, CORAH_PACKAGE_NAME);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    }
   }
   // END POTIONS ACTIONS
 
@@ -184,9 +194,15 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
 
 void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_GEAR_GEAR];
+
   if(currentAction == CB_ACTION_REFRESH_POTIONS)
   {
-    // Should close
+    if(Emulator::compareImages(instance, markers[CB_POSITION_GEAR_LOGOUT]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_GEAR_LOGOUT]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
   }
 }
 

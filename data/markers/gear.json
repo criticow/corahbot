@@ -1,5 +1,7 @@
 {
   "version": "0.0.1",
   "identifier": {"name":"gear","location":"gear","x":250,"y":274,"width":42,"height":11},
-  "markers": []
+  "markers": [
+    {"name":"logout","location":"gear","x":206,"y":446,"width":29,"height":10}
+  ]
 }
