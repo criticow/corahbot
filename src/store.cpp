@@ -12,9 +12,9 @@ std::unordered_map<std::string, std::unordered_map<std::string, Marker>> Store::
 
 std::vector<Selectable> Store::foods{
   {"food_fish_pie", "Ranhain Fish Pie"},
-  {"food_perfect_fish_pie", "Perfect Ranhain Fish Pie (P)"},
+  {"food_fish_pie_perfect", "Perfect Ranhain Fish Pie (P)"},
   {"food_fish_soup", "Jakal's Spicy Fish Soup"},
-  {"food_perfect_fish_soup", "Jakal's Spicy Fish Soup (P)"},
+  {"food_fish_soup_perfect", "Jakal's Spicy Fish Soup (P)"},
 };
 
 std::vector<Selectable> Store::potions{

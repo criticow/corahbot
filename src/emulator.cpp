@@ -123,6 +123,13 @@ void Emulator::click(const std::string &windowTitle, glm::ivec2 point)
   // LOGGER_DEBUG("Clicked: {}, {}", point.x, point.y);
 }
 
+void Emulator::click(const std::string &windowTitle, glm::ivec4 point)
+{
+  int x = Random::choose(point.x, point.x + point.z);
+  int y = Random::choose(point.y, point.y + point.w);
+  click(windowTitle, glm::ivec2(x, y));
+}
+
 void Emulator::click(const std::string & windowTitle, Marker & marker)
 {
   int x = Random::choose(marker.x, marker.x + marker.width);
@@ -130,7 +137,7 @@ void Emulator::click(const std::string & windowTitle, Marker & marker)
   click(windowTitle, glm::ivec2(x, y));
 }
 
-std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle)
+std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle, float threshold = 0.8)
 {
   std::pair matchResult = std::make_pair(false, glm::ivec4(0));
 
@@ -141,7 +148,7 @@ std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle)
   cv::Point minLoc, maxLoc;
   cv::minMaxLoc(result, nullptr, nullptr, &minLoc, &maxLoc);
 
-  if (result.at<float>(maxLoc) > 0.8) {
+  if (result.at<float>(maxLoc) > threshold) {
     matchResult.first = true;
     matchResult.second = glm::ivec4(maxLoc.x, maxLoc.y, needle.cols, needle.rows);
   }
@@ -294,6 +301,11 @@ cv::Mat Emulator::printscreen(const std::string &windowTitle, int x, int y, int 
   cv::Mat croped = screenshot(cropRegion).clone();
 
   return croped;
+}
+
+cv::Mat Emulator::printscreen(const std::string &windowTitle, Marker &marker)
+{
+  return printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
 }
 
 std::string Emulator::textFromImage(const std::string &windowTitle, Marker &marker)

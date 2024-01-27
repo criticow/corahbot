@@ -58,6 +58,12 @@ void Bot::run(const std::string &instance)
 
     if(location == CB_LOCATION_BOOK_BOOK || location == CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS)
       handleBook(instance, config, summary, currentRoutine, currentAction);
+    
+    if(location == CB_LOCATION_INVENTORY_INVENTORY)
+      handleInventory(instance, config, summary, currentRoutine, currentAction);
+
+    if(location == CB_LOCATION_ITEM_OPEN_ITEM_OPEN)
+      handleItemOpen(instance, config, summary, currentRoutine, currentAction);
 
     if(location == CB_LOCATION_LOGIN_LOGIN)
       handleLogin(instance, config, summary, currentRoutine, currentAction);
@@ -188,11 +194,6 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
 
   if(currentRoutine == CB_ROUTINE_FARM && swords < config.swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
-    // Swords is disabled
-    if(swords == -1 && config.buffs)
-    {
-      currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
-    }
     // If the current swords is below the threshold the swords should be reset
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -203,6 +204,16 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
   {
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_SWORDS)
+  {
+    // Check if there is buff applied to reapply
+    if(config.buffs && Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_BUFF_DEKDUN]))
+    {
+      currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
+    }
+
   }
 }
 
@@ -249,12 +260,96 @@ void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &s
 
 }
 
+void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_INVENTORY_INVENTORY];
+  std::vector<Marker> invLines{
+    markers[CB_POSITION_INVENTORY_INV_LINE1],
+    markers[CB_POSITION_INVENTORY_INV_LINE2],
+    markers[CB_POSITION_INVENTORY_INV_LINE3],
+    markers[CB_POSITION_INVENTORY_INV_LINE4]
+  };
+
+  if(currentRoutine == CB_ROUTINE_FARM)
+  {
+    if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+    {
+      std::pair<bool, glm::ivec4> res = {false, glm::ivec4(0)};
+      // Look for the first food in the list, if found click if not go to the next
+      for(auto &buff : config.selectedBuffs)
+      {
+        for(auto &marker : invLines)
+        {
+          cv::Mat needle = cv::imread("data/images/items/" + buff + ".png");
+          cv::Mat haysteack = Emulator::printscreen(instance, marker.x, marker.y, marker.width, marker.height);
+
+          res = Emulator::find(haysteack, needle, 0.95);
+
+          // The item was found
+          if(res.first)
+          {
+            Emulator::click(instance, {marker.x + res.second.x, marker.y + res.second.y, res.second.z, res.second.w});
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            break;
+          }
+        }
+
+        // The item was found
+        if(res.first)
+          break;
+      }
+
+      // Not found, just close
+      if(!res.first)
+      {
+        currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
+      }
+    }
+
+    
+    if(currentAction == CB_ACTION_REFRESH_BUFFS_RETURN)
+    {
+      if(Emulator::compareImages(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]))
+      {
+        currentAction = CB_ACTION_REFRESH_SWORDS;
+        Emulator::click(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      }
+    }
+  }
+}
+
+void Bot::handleItemOpen(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ITEM_OPEN_ITEM_OPEN];
+
+  if(currentRoutine == CB_ROUTINE_FARM)
+  {
+    if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+    {
+      Marker &useBtnRegion = markers[CB_POSITION_ITEM_OPEN_USE_BTN_REGION];
+      Marker &useBtn = markers[CB_POSITION_ITEM_OPEN_USE_BTN];
+
+      cv::Mat haystack = Emulator::printscreen(instance, useBtnRegion);
+      cv::Mat needle = cv::imread("data/images/" + useBtn.location + "/" + useBtn.name + ".png");
+      // Locate the use button
+      std::pair<bool, glm::ivec4> res = Emulator::find(haystack, needle, 0.95);
+
+      if(res.first)
+      {
+        currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
+        Emulator::click(instance, {useBtnRegion.x + res.second.x, useBtnRegion.y + res.second.y, res.second.z, res.second.w});
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      }
+    }
+  }
+}
+
 void Bot::handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
-  bool res = Emulator::compareImages(instance, markers[CB_LOCATION_LOGIN_LOGIN]);
 
-  if(currentRoutine == CB_ROUTINE_FARM && res)
+  if(currentRoutine == CB_ROUTINE_FARM)
   {
     Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_BTN]);
     std::this_thread::sleep_for(std::chrono::milliseconds(2000));

@@ -26,17 +26,20 @@ class Emulator
   static void killapp(const std::string &windowTitle, const std::string &packageName);
   static void quit(const std::string &windowTitle);
   static void click(const std::string &windowTitle, glm::ivec2 point);
+  static void click(const std::string &windowTitle, glm::ivec4 point);
   static void click(const std::string &windowTitle, Marker &marker);
 
   static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, const std::string &needlePath, float threshold);
-  static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, Marker marker , const std::string &haystackPath);
-  static std::pair<bool, glm::ivec4> find(cv::Mat haystack, cv::Mat needle);
+  static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, Marker marker, const std::string &haystackPath);
+  // static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, Marker stackMarker, Marker needleMarker);
+  static std::pair<bool, glm::ivec4> find(cv::Mat haystack, cv::Mat needle, float threshold);
   
   static void drawRectangles(cv::Mat &canvas, const std::vector<glm::ivec4> &points);
   static bool compareImages(const std::string &windowTitle, Marker marker);
 
   static cv::Mat printscreen(const std::string &windowTitle);
   static cv::Mat printscreen(const std::string &windowTitle, int x, int y, int width, int height);
+  static cv::Mat printscreen(const std::string &windowTitle, Marker &marker);
 
   static std::string textFromImage(const std::string &windowTitle, Marker &marker);
 
