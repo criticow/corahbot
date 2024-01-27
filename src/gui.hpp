@@ -6,6 +6,7 @@
 #include <opencv2/opencv.hpp>
 #include "bot.hpp"
 #include "store.hpp"
+#include "work_config.hpp"
 
 class Application;
 
@@ -23,9 +24,9 @@ class GUI : public BaseGUI
   std::vector<std::string> instances;
 
   void loadFonts();
-  void farmUI(const std::string &instance);
-  void combineUI(const std::string &instance);
   void statesUI(const std::string &instance);
   void actionsUI(const std::string &instance);
+  void farmUI(const std::string &instance);
+  void buffsUI(const std::string &instance);
   void summaryUI(const std::string &instance);
 };

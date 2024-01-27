@@ -10,6 +10,18 @@ std::unordered_map<std::string, Marker> Store::positionMarkers;
 
 std::unordered_map<std::string, std::unordered_map<std::string, Marker>> Store::markers;
 
+std::vector<Selectable> Store::foods{
+  {"food_fish_pie", "Ranhain Fish Pie"},
+  {"food_perfect_fish_pie", "Perfect Ranhain Fish Pie (P)"},
+  {"food_fish_soup", "Jakal's Spicy Fish Soup"},
+  {"food_perfect_fish_soup", "Jakal's Spicy Fish Soup (P)"},
+};
+
+std::vector<Selectable> Store::potions{
+  {"potion_double_exp", "Double EXP Potion"},
+  {"potion_triple_exp", "Triple EXP Potion"},
+};
+
 std::unordered_map<std::string, std::string> Store::portals{
   { "ranhain", "Ranhain"},
   { "dekdun", "Dekdun"},

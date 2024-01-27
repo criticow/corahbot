@@ -5,6 +5,7 @@
     {"name":"inv_line1","location":"inventory","x":42,"y":321,"width":262,"height":48},
     {"name":"inv_line2","location":"inventory","x":42,"y":377,"width":262,"height":48},
     {"name":"inv_line3","location":"inventory","x":42,"y":432,"width":262,"height":48},
-    {"name":"inv_line4","location":"inventory","x":42,"y":487,"width":262,"height":48}
+    {"name":"inv_line4","location":"inventory","x":42,"y":487,"width":262,"height":48},
+    {"name":"slot1","location":"inventory","x":50,"y":345,"width":31,"height":11}
   ]
 }

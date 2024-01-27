@@ -33,6 +33,7 @@ with open(generated_file, "w") as file:
   file.write('#define CB_ACTION_REFRESH_SWORDS "refresh_swords"\n')
   file.write('#define CB_ACTION_REFRESH_POTIONS "refresh_potions"\n')
   file.write('#define CB_ACTION_UPDATE_EXP "update_exp"\n')
+  file.write('#define CB_ACTION_REFRESH_BUFFS_INVENTORY "refresh_buffs_inventory"\n')
 
   file.write('\n')
 

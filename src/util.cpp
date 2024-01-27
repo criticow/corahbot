@@ -93,19 +93,7 @@ WorkConfig util::getConfig(const std::string &instance)
       std::ostringstream ss;
       ss << file.rdbuf();
 
-      rapidjson::Document document;
-      document.Parse(ss.str().c_str());
-
-      if(document.IsObject())
-      {
-        workConfig.farm = document["farm"].GetBool();
-        workConfig.combine = document["combine"].GetBool();
-        workConfig.selectedPortal = document["selectedPortal"].GetString();
-        workConfig.swordsThreshold = document["swordsThreshold"].GetInt();
-        workConfig.refreshMode = document["refreshMode"].GetInt();
-        workConfig.potionsThreshold = document["potionsThreshold"].GetInt();
-        workConfig.selectedMonster = document["selectedMonster"].GetInt();
-      }
+      workConfig = WorkConfig(ss.str());
 
       file.close();
     }

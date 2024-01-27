@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"book_guildless","location":"book_guildless","x":183,"y":361,"width":10,"height":10},
+  "markers": [
+    {"name":"bag","location":"book_guildless","x":73,"y":232,"width":20,"height":10}
+  ]
+}

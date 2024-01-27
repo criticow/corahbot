@@ -53,14 +53,11 @@ void Bot::run(const std::string &instance)
       handleFighting(instance, config, summary, currentRoutine, currentAction, swordAmount, potionAmount);
     }
 
-    if(location == CB_LOCATION_GEAR_GEAR)
+    if(location == CB_LOCATION_GEAR_GEAR || location == CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS)
       handleGear(instance, config, summary, currentRoutine, currentAction);
 
-    if(location == CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS)
-      handleGear(instance, config, summary, currentRoutine, currentAction);
-
-    // if(location == CB_LOCATION_BOOK_BOOK)
-      // handleBook(instance, config, summary, currentRoutine, currentAction);
+    if(location == CB_LOCATION_BOOK_BOOK || location == CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS)
+      handleBook(instance, config, summary, currentRoutine, currentAction);
 
     if(location == CB_LOCATION_LOGIN_LOGIN)
       handleLogin(instance, config, summary, currentRoutine, currentAction);
@@ -191,11 +188,22 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
 
   if(currentRoutine == CB_ROUTINE_FARM && swords < config.swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
+    // Swords is disabled
+    if(swords == -1 && config.buffs)
+    {
+      currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
+    }
     // If the current swords is below the threshold the swords should be reset
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
   }
   // END SWORDS ACTIONS
+
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+  {
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  }
 }
 
 void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
@@ -222,13 +230,23 @@ void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &s
 void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_BOOK_BOOK];
+  std::unordered_map<std::string, Marker> &markers2 = Store::markers[CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS];
 
-  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_UPDATE_EXP)
+  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
-    Emulator::click(instance, markers[CB_LOCATION_BOOK_BOOK]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    return;
+    if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_BAG]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_BOOK_BAG]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    if(Emulator::compareImages(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]))
+    {
+      Emulator::click(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
   }
+
 }
 
 void Bot::handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)

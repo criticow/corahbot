@@ -2,7 +2,7 @@
 
 #include <glb/glb.hpp>
 #include <filesystem>
-#include "store.hpp"
+#include "work_config.hpp"
 
 namespace util
 {

@@ -94,7 +94,7 @@ void GUI::renderUI()
         if(ImGui::BeginTabBar("ActionsTabBar"))
         {
           this->farmUI(instance);
-          this->combineUI(instance);
+          this->buffsUI(instance);
           this->summaryUI(instance);
           ImGui::EndTabBar();
         }
@@ -213,101 +213,81 @@ void GUI::farmUI(const std::string &instance)
   }
 }
 
-void GUI::combineUI(const std::string &instance)
+void GUI::buffsUI(const std::string &instance)
 {
   WorkConfig &config = Store::configs[instance];
-  if(ImGui::BeginTabItem("Combine"))
+
+  if(ImGui::BeginTabItem("Buffs"))
   {
-    ImGui::Checkbox("Enable", &config.combine);
+    ImGui::Checkbox("Enable", &config.buffs);
 
-    if(!config.combine)
+    if(!config.buffs)
     {
       ImGui::EndTabItem();
       return;
     }
 
-    int columns = 6;
-    ImGui::BeginTable("GemsTable", columns, ImGuiTableFlags_Borders);
+    ImGui::Spacing();
 
-    for(size_t i = 0; i < columns; i++)
+    ImGui::Columns(2, "BuffsColumns", false);
+
+    ImGui::SeparatorText("Foods");
+    for(auto &food : Store::foods)
     {
-      if(i % 2 == 0)
+      std::vector<std::string>::iterator it = std::find(config.selectedBuffs.begin(), config.selectedBuffs.end(), food.name);
+      bool isSelected = it != config.selectedBuffs.end();
+      size_t index;
+      std::string name = food.displayName;
+
+      if(isSelected)
       {
-        ImGui::TableSetupColumn("Gem", ImGuiTableColumnFlags_None);
-        continue;
+        index = std::distance(config.selectedBuffs.begin(), it);
+        name = std::to_string(index + 1) + " - " + name;
       }
 
-      ImGui::TableSetupColumn("Chip", ImGuiTableColumnFlags_None);
-    }
-
-    ImGui::TableHeadersRow();
-    
-    int counter = 0;
-    for(auto &gem : config.gems)
-    {
-      if(counter == 0)
+      if(ImGui::Selectable(name.c_str(), isSelected))
       {
-        ImGui::TableNextRow();
-      }
-
-      ImGui::TableSetColumnIndex(counter);
-      counter++;
-      ImGui::PushStyleColor(ImGuiCol_Text, gem.color);
-      if(ImGui::Selectable(gem.name.c_str(), gem.selected))
-      {
-        gem.selected = !gem.selected;
-
-        if(gem.selected)
+        // Already exists in the list of selected buffs
+        if(isSelected)
         {
-          config.selectedGems.push_back(gem.name);
+          config.selectedBuffs.erase(std::remove(config.selectedBuffs.begin(), config.selectedBuffs.end(), food.name), config.selectedBuffs.end());
+          continue;
         }
-        else
-        {
-          config.selectedGems.erase(
-            std::remove(config.selectedGems.begin(), config.selectedGems.end(), gem.name), config.selectedGems.end()
-          );
-        }
-      }
-      ImGui::PopStyleColor();
 
-      if(counter == columns)
-      {
-        counter = 0;
+        config.selectedBuffs.push_back(food.name);
       }
     }
-    ImGui::EndTable();
 
-    if(config.selectedGems.empty())
+    ImGui::NextColumn();
+
+    ImGui::SeparatorText("Potions");
+    for(auto &potion : Store::potions)
     {
-      ImGui::EndTabItem();
-      ImGui::EndDisabled();
-      return;
-    }
+      std::vector<std::string>::iterator it = std::find(config.selectedBuffs.begin(), config.selectedBuffs.end(), potion.name);
+      bool isSelected = it != config.selectedBuffs.end();
+      size_t index;
+      std::string name = potion.displayName;
 
-    // Display the selected items in the order they were selected
-    ImGui::Spacing();
-    ImGui::Spacing();
-
-    ImGui::Text("Combine priority:");
-
-    ImGui::Spacing();
-    ImGui::Separator();
-
-
-    ImGui::Columns(4, nullptr, false);
-
-    int rows = 6;
-    for(size_t i = 1; i <= config.selectedGems.size(); i++) {
-      std::string prioNumber = i < 10 ? "0" + std::to_string(i) : std::to_string(i);
-      ImGui::Text(std::format("{} - {}", prioNumber, config.selectedGems[i - 1]).c_str());
-
-      if(i % rows == 0)
+      if(isSelected)
       {
-        ImGui::NextColumn();
+        index = std::distance(config.selectedBuffs.begin(), it);
+        name = std::to_string(index + 1) + " - " + name;
+      }
+
+      if(ImGui::Selectable(name.c_str(), isSelected))
+      {
+        // Already exists in the list of selected buffs
+        if(isSelected)
+        {
+          config.selectedBuffs.erase(std::remove(config.selectedBuffs.begin(), config.selectedBuffs.end(), potion.name), config.selectedBuffs.end());
+          continue;
+        }
+
+        config.selectedBuffs.push_back(potion.name);
       }
     }
 
-    ImGui::Columns(1, nullptr, false);
+    ImGui::Columns(1);
 
     ImGui::EndTabItem();
   }

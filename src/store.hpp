@@ -6,6 +6,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
 #include "generated_macros.hpp"
+#include "work_config.hpp"
 
 struct Monster
 {
@@ -65,53 +66,10 @@ struct InstanceState
   InstanceState(bool open, bool working, bool minimized) : open(open), working(working), minimized(minimized) {}
 };
 
-struct SelectableItem
+struct Selectable
 {
-  int index;
-  bool selected = false;
   std::string name;
-  ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-};
-
-struct WorkConfig
-{
-  std::vector<std::string> selectedGems;
-  std::vector<SelectableItem> gems{
-    {0, false, "Amethyst", ImVec4(249 / 255.0f, 39 / 255.0f, 223 / 255.0f, 1.0f)},
-    {1, false, "Amethyst (C)", ImVec4(249 / 255.0f, 39 / 255.0f, 223 / 255.0f, 1.0f)},
-    {2, false, "Topaz", ImVec4(246 / 255.0f, 180 / 255.0f, 33 / 255.0f, 2.0f)},
-    {3, false, "Topaz (C)", ImVec4(246 / 255.0f, 180 / 255.0f, 33 / 255.0f, 2.0f)},
-    {4, false, "Opal", ImVec4(0 / 255.0f, 70 / 255.0f, 250 / 255.0f, 1.0f)},
-    {5, false, "Opal (C)", ImVec4(0 / 255.0f, 70 / 255.0f, 250 / 255.0f, 1.0f)}
-  };
-
-  bool farm;
-  bool combine;
-  int refreshMode = 0;
-  std::string selectedPortal = "dekdun";
-  int selectedMonster = 5;
-  int swordsThreshold = 15;
-  int potionsThreshold = 3;
-
-  std::string toJson()
-  {
-    rapidjson::Document document;
-    document.SetObject();
-
-    document.AddMember("farm", farm, document.GetAllocator());
-    document.AddMember("combine", combine, document.GetAllocator());
-    document.AddMember("refreshMode", refreshMode, document.GetAllocator());
-    document.AddMember("selectedPortal", rapidjson::StringRef(selectedPortal.c_str()), document.GetAllocator());
-    document.AddMember("selectedMonster", selectedMonster, document.GetAllocator());
-    document.AddMember("swordsThreshold", swordsThreshold, document.GetAllocator());
-    document.AddMember("potionsThreshold", potionsThreshold, document.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-
-    document.Accept(writer);
-    return buffer.GetString();
-  }
+  std::string displayName;
 };
 
 struct Summary
@@ -141,6 +99,9 @@ class Store
 
   static std::unordered_map<std::string, std::string> portals;
   static std::unordered_map<std::string, std::vector<Monster>> monsters;
+  static std::vector<Selectable> foods;
+  static std::vector<Selectable> potions;
+
   static std::vector<std::string> refreshModes;
 
   static std::unordered_map<std::string, int> swordsMap;
