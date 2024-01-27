@@ -139,14 +139,17 @@ void GUI::farmUI(const std::string &instance)
     ImGui::InputInt("Potions Threshold", &config.potionsThreshold, 0, 29);
     config.potionsThreshold = std::clamp(config.potionsThreshold, 0, 29);
 
+    ImGui::Columns(2, "FarmColumns", false);
+    // LEFT COLUMN
+
     ImGui::PushID(0);
     ImGui::Text("Portal");
-    if(ImGui::BeginCombo(" ", portals[config.selectedPortal].c_str(), ImGuiComboFlags_WidthFitPreview))
+    if(ImGui::BeginCombo(" ", portals[config.selectedPortal].c_str()))
     {
       for(auto &[key, portal] : portals)
       {
         const bool isSelected = (config.selectedPortal == key);
-        if(ImGui::Selectable(portal.c_str(), isSelected))
+        if(ImGui::Selectable(portal.c_str(), isSelected), ImGuiSelectableFlags_SpanAllColumns)
         {
           config.selectedPortal = key;
         }
@@ -161,34 +164,13 @@ void GUI::farmUI(const std::string &instance)
     ImGui::PopID();
 
     ImGui::PushID(1);
-    ImGui::Text("Monster");
-    if(ImGui::BeginCombo(" ", monsterList[config.selectedMonster].displayName.c_str(), ImGuiComboFlags_WidthFitPreview))
-    {
-      for(size_t i = 0; i < monsterList.size(); i++)
-      {
-        const bool isSelected = (config.selectedMonster == i);
-        if(ImGui::Selectable(monsterList[i].displayName.c_str(), isSelected))
-        {
-          config.selectedMonster = i;
-        }
-
-        if(isSelected)
-        {
-          ImGui::SetItemDefaultFocus();
-        }
-      }
-      ImGui::EndCombo();
-    }
-    ImGui::PopID();
-
-    ImGui::PushID(2);
     ImGui::Text("Refresh Mode");
-    if(ImGui::BeginCombo(" ", Store::refreshModes[config.refreshMode].c_str(), ImGuiComboFlags_WidthFitPreview))
+    if(ImGui::BeginCombo(" ", Store::refreshModes[config.refreshMode].c_str()))
     {
       for(size_t i = 0; i < Store::refreshModes.size(); i++)
       {
         const bool isSelected = (config.refreshMode == i);
-        if(ImGui::Selectable(Store::refreshModes[i].c_str(), isSelected))
+        if(ImGui::Selectable(Store::refreshModes[i].c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
         {
           config.refreshMode = i;
         }
@@ -201,6 +183,31 @@ void GUI::farmUI(const std::string &instance)
       ImGui::EndCombo();
     }
     ImGui::PopID();
+
+    ImGui::NextColumn();
+
+    // RIGHT COLUMN
+    ImGui::PushID(2);
+    ImGui::Text("Monster");
+    if(ImGui::BeginCombo(" ", monsterList[config.selectedMonster].displayName.c_str()))
+    {
+      for(size_t i = 0; i < monsterList.size(); i++)
+      {
+        const bool isSelected = (config.selectedMonster == i);
+        if(ImGui::Selectable(monsterList[i].displayName.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
+        {
+          config.selectedMonster = i;
+        }
+
+        if(isSelected)
+        {
+          ImGui::SetItemDefaultFocus();
+        }
+      }
+      ImGui::EndCombo();
+    }
+    ImGui::PopID();
+    ImGui::Columns(1);
 
     ImGui::EndTabItem();
   }
