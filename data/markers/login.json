@@ -1,7 +1,0 @@
-{
-  "version": "0.0.1",
-  "identifier": {"name":"login","location":"login","x":36,"y":380,"width":26,"height":14},
-  "markers": [
-    {"name":"login_btn","location":"login","x":134,"y":455,"width":80,"height":14}
-  ]
-}

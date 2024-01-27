@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"home","location":"home","x":271,"y":68,"width":14,"height":14},
+  "markers": [
+    {"name":"start_btn","location":"home","x":116,"y":480,"width":38,"height":10},
+    {"name":"potion","location":"home","x":117,"y":377,"width":12,"height":8},
+    {"name":"refill_btn","location":"home","x":160,"y":367,"width":30,"height":10}
+  ]
+}

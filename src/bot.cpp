@@ -56,6 +56,12 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_GEAR_GEAR)
       handleGear(instance, config, summary, currentRoutine, currentAction);
 
+    if(location == CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS)
+      handleGear(instance, config, summary, currentRoutine, currentAction);
+
+    // if(location == CB_LOCATION_BOOK_BOOK)
+      // handleBook(instance, config, summary, currentRoutine, currentAction);
+
     if(location == CB_LOCATION_LOGIN_LOGIN)
       handleLogin(instance, config, summary, currentRoutine, currentAction);
 
@@ -195,6 +201,7 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
 void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_GEAR_GEAR];
+  std::unordered_map<std::string, Marker> &markers2 = Store::markers[CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS];
 
   if(currentAction == CB_ACTION_REFRESH_POTIONS)
   {
@@ -203,6 +210,24 @@ void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &s
       Emulator::click(instance, markers[CB_POSITION_GEAR_LOGOUT]);
       std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+
+    if(Emulator::compareImages(instance, markers2[CB_POSITION_GEAR_GUILDLESS_LOGOUT]))
+    {
+      Emulator::click(instance, markers2[CB_POSITION_GEAR_GUILDLESS_LOGOUT]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+  }
+}
+
+void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_BOOK_BOOK];
+
+  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_UPDATE_EXP)
+  {
+    Emulator::click(instance, markers[CB_LOCATION_BOOK_BOOK]);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    return;
   }
 }
 

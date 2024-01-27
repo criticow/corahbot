@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"map","location":"map","x":60,"y":40,"width":17,"height":17},
+  "markers": [
+    {"name":"ranhain","location":"map","x":102,"y":44,"width":63,"height":16},
+    {"name":"bear","location":"map","x":129,"y":411,"width":16,"height":16},
+    {"name":"giant_ant","location":"map","x":198,"y":411,"width":16,"height":16},
+    {"name":"chinavia","location":"map","x":264,"y":411,"width":16,"height":16},
+    {"name":"enraged_turtle","location":"map","x":129,"y":322,"width":16,"height":16},
+    {"name":"goblin_thief","location":"map","x":60,"y":322,"width":16,"height":16},
+    {"name":"scavanger","location":"map","x":129,"y":236,"width":16,"height":16},
+    {"name":"amphnaly","location":"map","x":199,"y":236,"width":16,"height":16},
+    {"name":"goblin_chief","location":"map","x":199,"y":145,"width":16,"height":16},
+    {"name":"dekdun","location":"map","x":102,"y":44,"width":63,"height":16},
+    {"name":"thia","location":"map","x":197,"y":143,"width":16,"height":16},
+    {"name":"skeleton_worker","location":"map","x":130,"y":410,"width":16,"height":16},
+    {"name":"lost_amummy","location":"map","x":130,"y":321,"width":16,"height":16},
+    {"name":"skeleton_captain","location":"map","x":130,"y":239,"width":16,"height":16},
+    {"name":"skeleton_wizard","location":"map","x":61,"y":235,"width":16,"height":16},
+    {"name":"skeleton_thief","location":"map","x":197,"y":236,"width":16,"height":16},
+    {"name":"skeleton_king","location":"map","x":267,"y":148,"width":16,"height":16}
+  ]
+}

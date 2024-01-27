@@ -139,7 +139,6 @@ class Store
   static std::unordered_map<std::string, Marker> positionMarkers;
   static std::unordered_map<std::string, std::unordered_map<std::string, Marker>> markers;
 
-
   static std::unordered_map<std::string, std::string> portals;
   static std::unordered_map<std::string, std::vector<Monster>> monsters;
   static std::vector<std::string> refreshModes;

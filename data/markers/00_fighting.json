@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"fighting","location":"fighting","x":98,"y":590,"width":19,"height":11},
+  "markers": [
+    {"name":"potions","location":"fighting","x":81,"y":559,"width":12,"height":9},
+    {"name":"swords","location":"fighting","x":161,"y":594,"width":24,"height":14},
+    {"name":"gear","location":"fighting","x":283,"y":358,"width":20,"height":18},
+    {"name":"book","location":"fighting","x":39,"y":358,"width":20,"height":18}
+  ]
+}

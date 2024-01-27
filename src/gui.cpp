@@ -11,82 +11,6 @@ ImVec4 blue(0.0f, 0.0f, 1.0f, 1.0f);
 
 int currentTab = 0;
 
-WorkConfig getConfig(const std::string &instance)
-{
-  WorkConfig workConfig{};
-  std::filesystem::path configPath = std::filesystem::path(getenv("USERPROFILE")) / ".corahbot";
-  // Load config
-  try
-  {
-    // Create the config folder if it does not exists
-    if(!std::filesystem::is_directory(configPath))
-    {
-      std::filesystem::create_directory(configPath);
-      std::filesystem::create_directory(std::filesystem::path(configPath / "instances"));
-    }
-
-    std::filesystem::path instanceFile = std::filesystem::path(configPath / "instances" / (instance + ".json"));
-    std::ifstream file(instanceFile);
-
-    if(file.is_open())
-    {
-      LOGGER_DEBUG("Loading config for instance: {}", instance);
-      std::ostringstream ss;
-      ss << file.rdbuf();
-
-      rapidjson::Document document;
-      document.Parse(ss.str().c_str());
-
-      if(document.IsObject())
-      {
-        workConfig.farm = document["farm"].GetBool();
-        workConfig.combine = document["combine"].GetBool();
-        workConfig.selectedPortal = document["selectedPortal"].GetString();
-        workConfig.swordsThreshold = document["swordsThreshold"].GetInt();
-        workConfig.refreshMode = document["refreshMode"].GetInt();
-        workConfig.potionsThreshold = document["potionsThreshold"].GetInt();
-        workConfig.selectedMonster = document["selectedMonster"].GetInt();
-      }
-
-      file.close();
-    }
-  }
-  catch(const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-  }
-
-  return workConfig;
-}
-
-void saveConfig(const std::string &instance, WorkConfig &config)
-{
-  std::filesystem::path configPath = std::filesystem::path(getenv("USERPROFILE")) / ".corahbot";
-  // Load config
-  try
-  {
-    // Create the config folder if it does not exists
-    if(!std::filesystem::is_directory(configPath))
-    {
-      std::filesystem::create_directory(configPath);
-      std::filesystem::create_directory(std::filesystem::path(configPath / "instances"));
-    }
-
-    std::filesystem::path instanceFile = std::filesystem::path(configPath / "instances" / (instance + ".json"));
-    std::ofstream file(instanceFile);
-
-    if(file.is_open())
-    {
-      file << config.toJson();
-      file.close();
-    }
-  }
-  catch(const std::exception& e)
-  {
-    std::cerr << e.what() << '\n';
-  }
-}
-
 void botThread(const std::string &instance)
 {
   Bot bot;
@@ -130,6 +54,11 @@ void GUI::renderUI()
     Application::toggleVsync();
   }
 
+  if(ImGui::Button("Arrange"))
+  {
+    Emulator::arrange();
+  }
+
   ImGui::End();
   // END GENERAL WINDOW
 
@@ -150,12 +79,11 @@ void GUI::renderUI()
   ImGui::SetWindowPos(ImVec2(0, baseWindowHeight));
   ImGui::SetWindowSize(ImVec2(windowSize.x, windowSize.y - baseWindowHeight));
   
-  if(!this->instances.empty() && ImGui::BeginTabBar("Tabs", ImGuiTabBarFlags_Reorderable))
+  if(!this->instances.empty() && ImGui::BeginTabBar("Tabs"))
   {
     for(size_t i = 0; i < this->instances.size(); i++)
     {
       std::string &instance = this->instances[i];
-      ImGui::PushID(i);
 
       if(ImGui::BeginTabItem(instance.c_str()))
       {
@@ -173,7 +101,6 @@ void GUI::renderUI()
 
         ImGui::EndTabItem();
       }
-      ImGui::PopID();
     }
 
     ImGui::EndTabBar();
@@ -422,7 +349,7 @@ void GUI::actionsUI(const std::string &instance)
   ImGui::BeginDisabled(state.working.load());
   if(ImGui::Button(ICON_FA_PLAY) || Application::input.pressed(ACTION_ACCEPT))
   {
-    saveConfig(instance, Store::configs[instance]);
+    util::saveConfig(instance, Store::configs[instance]);
     state.working.store(true);
     std::thread(botThread, std::ref(instance)).detach();
   }
@@ -581,7 +508,7 @@ void GUI::init()
   for(auto &instance : this->instances)
   {
     Store::states[instance] = InstanceState{true, false, false};
-    Store::configs[instance] = getConfig(instance);
+    Store::configs[instance] = util::getConfig(instance);
     Store::summaries[instance] = Summary{};
   }
 }

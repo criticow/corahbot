@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"gear_guildless","location":"gear_guildless","x":206,"y":446,"width":29,"height":10},
+  "markers": [
+    {"name":"logout","location":"gear_guildless","x":206,"y":446,"width":29,"height":10}
+  ]
+}
