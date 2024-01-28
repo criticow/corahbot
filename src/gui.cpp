@@ -149,7 +149,7 @@ void GUI::farmUI(const std::string &instance)
       for(auto &[key, portal] : portals)
       {
         const bool isSelected = (config.selectedPortal == key);
-        if(ImGui::Selectable(portal.c_str(), isSelected), ImGuiSelectableFlags_SpanAllColumns)
+        if(ImGui::Selectable(portal.c_str(), isSelected, ImGuiSelectableFlags_SpanAllColumns))
         {
           config.selectedPortal = key;
         }
@@ -185,6 +185,11 @@ void GUI::farmUI(const std::string &instance)
     ImGui::PopID();
 
     ImGui::NextColumn();
+
+    if(config.selectedMonster >= monsterList.size())
+    {
+      config.selectedMonster = 0;
+    }
 
     // RIGHT COLUMN
     ImGui::PushID(2);

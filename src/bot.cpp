@@ -248,13 +248,13 @@ void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &s
     if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_BAG]))
     {
       Emulator::click(instance, markers[CB_POSITION_BOOK_BAG]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
 
     if(Emulator::compareImages(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]))
     {
       Emulator::click(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
   }
 

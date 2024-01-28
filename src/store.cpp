@@ -25,6 +25,8 @@ std::vector<Selectable> Store::potions{
 std::unordered_map<std::string, std::string> Store::portals{
   { "ranhain", "Ranhain"},
   { "dekdun", "Dekdun"},
+  { "vulcardi", "Vulcardi"},
+  { "iceroost", "Iceroost"}
   // "Vulcardi",
   // "Iceroost",
   // "Forilon",
@@ -58,6 +60,18 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
       { "skeleton_thief", "Skeleton Thief (Lv.90)" },
       { "thia", "Thia (Lv.100)" },
       { "skeleton_king", "Skeleton King (Lv.105)" }
+    }
+  },
+  {
+    "vulcardi",
+    {
+      { "balor", "Balor (Lv.115)"}
+    }
+  },
+  {
+    "iceroost",
+    {
+      { "rinch", "Rinch (Lv.120)"}
     }
   }
 };
