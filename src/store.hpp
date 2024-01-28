@@ -103,6 +103,7 @@ class Store
   static std::vector<Selectable> foods;
   static std::vector<Selectable> potions;
   static std::vector<Selectable> scrolls;
+  static std::vector<Selectable> chips;
 
   static std::vector<std::string> refreshModes;
 

@@ -41,6 +41,12 @@ std::unordered_map<std::string, std::string> Store::portals{
   // "Mitron"
 };
 
+std::vector<Selectable> Store::chips{
+  {"1", "Amethyst Chip"},
+  {"2", "Topaz Chip"},
+  {"3", "Opal Chip"},
+};
+
 std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_MODE_CLOSE};
 
 std::unordered_map<std::string, std::vector<Monster>> Store::monsters{

@@ -22,9 +22,13 @@ class WorkConfig
 
   std::vector<std::string> selectedBuffs;
   std::vector<std::string> selectedQuests;
+  std::vector<std::string> selectedChips;
 
   WorkConfig(){};
   WorkConfig(const std::string &json);
 
   std::string toJson();
+  private:
+  rapidjson::Value parseArray(rapidjson::Document &document, std::vector<std::string> &list);
+  void loadList(const std::string &name, std::vector<std::string> &list, rapidjson::Document &document);
 };
