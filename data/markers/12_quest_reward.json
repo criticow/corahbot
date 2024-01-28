@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"quest_reward","location":"quest_reward","x":126,"y":301,"width":30,"height":10},
+  "markers": [
+    {"name":"claim_btn","location":"quest_reward","x":132,"y":386,"width":34,"height":12}
+  ]
+}

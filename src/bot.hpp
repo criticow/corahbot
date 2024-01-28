@@ -15,15 +15,21 @@ class Bot
 
   private:
   Temporizer tempo;
+  std::string instance;
+  WorkConfig *config = nullptr;
+  Summary *summary = nullptr;
+  std::string currentRoutine;
+  std::string currentAction;
 
   std::string findLocation(const std::string &instance);
-  void handleFighting(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions);
-  void handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleBook(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleInventory(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleItemOpen(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleHome(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleRefill(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
-  void handleMap(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction);
+  void handleFighting(int &swords, int &potions);
+  void handleGear();
+  void handleBook();
+  void handleInventory();
+  void handleItemOpen();
+  void handleLogin();
+  void handleHome();
+  void handleRefill();
+  void handleMap();
+  void handleQuestReward();
 };

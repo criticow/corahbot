@@ -136,6 +136,25 @@ void Emulator::click(const std::string & windowTitle, Marker & marker)
   click(windowTitle, glm::ivec2(x, y));
 }
 
+void Emulator::drag(const std::string &windowTitle, glm::ivec2 &start, glm::ivec2 &end)
+{
+  HWND hWnd = FindWindow(nullptr, windowTitle.c_str());
+
+  LPARAM startParam = MAKELPARAM(start.x, start.y);
+
+  // Send left mouse button down message
+  SendMessage(hWnd, WM_LBUTTONDOWN, MK_LBUTTON, startParam);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  LPARAM endParam = MAKELPARAM(start.x, start.y);
+
+  SendMessage(hWnd, WM_MOUSEMOVE, MK_LBUTTON, endParam);
+
+  // Send left mouse button up message
+  SendMessage(hWnd, WM_LBUTTONUP, 0, endParam);
+}
+
 std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle, float threshold = 0.8)
 {
   std::pair matchResult = std::make_pair(false, glm::ivec4(0));

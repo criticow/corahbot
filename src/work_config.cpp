@@ -22,6 +22,17 @@ WorkConfig::WorkConfig(const std::string &json)
         selectedBuffs.push_back(array[i].GetString());
       }
     }
+    if(document.HasMember("quests"))
+      quests = document["quests"].GetBool();
+    if(document.HasMember("selectedQuests"))
+    {
+      const rapidjson::Value &array = document["selectedQuests"].GetArray();
+
+      for(rapidjson::SizeType i = 0; i < array.Size(); i++)
+      {
+        selectedQuests.push_back(array[i].GetString());
+      }
+    }
     if(document.HasMember("selectedPortal"))
       selectedPortal = document["selectedPortal"].GetString();
     if(document.HasMember("swordsThreshold"))
@@ -42,15 +53,23 @@ std::string WorkConfig::toJson()
 
   document.AddMember("farm", farm, document.GetAllocator());
   document.AddMember("combine", combine, document.GetAllocator());
-  document.AddMember("buffs", buffs, document.GetAllocator());
 
-  rapidjson::Value array(rapidjson::kArrayType);
+  document.AddMember("buffs", buffs, document.GetAllocator());
+  rapidjson::Value buffsArray(rapidjson::kArrayType);
   for (const auto& str : selectedBuffs) {
     rapidjson::Value jsonStr(rapidjson::StringRef(str.c_str()));
-    array.PushBack(jsonStr, document.GetAllocator());
+    buffsArray.PushBack(jsonStr, document.GetAllocator());
   }
+  document.AddMember("selectedBuffs", buffsArray, document.GetAllocator());
 
-  document.AddMember("selectedBuffs", array, document.GetAllocator());
+  document.AddMember("quests", quests, document.GetAllocator());
+  rapidjson::Value questsArray(rapidjson::kArrayType);
+  for (const auto& str : selectedQuests) {
+    rapidjson::Value jsonStr(rapidjson::StringRef(str.c_str()));
+    questsArray.PushBack(jsonStr, document.GetAllocator());
+  }
+  document.AddMember("selectedQuests", questsArray, document.GetAllocator());
+
   document.AddMember("refreshMode", refreshMode, document.GetAllocator());
   document.AddMember("selectedPortal", rapidjson::StringRef(selectedPortal.c_str()), document.GetAllocator());
   document.AddMember("selectedMonster", selectedMonster, document.GetAllocator());

@@ -101,6 +101,7 @@ class Store
   static std::unordered_map<std::string, std::vector<Monster>> monsters;
   static std::vector<Selectable> foods;
   static std::vector<Selectable> potions;
+  static std::vector<Selectable> scrolls;
 
   static std::vector<std::string> refreshModes;
 

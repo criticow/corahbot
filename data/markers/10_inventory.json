@@ -22,7 +22,6 @@
     {"name":"inv_slot_18","location":"inventory","x":151,"y":507,"width":44,"height":24},
     {"name":"inv_slot_19","location":"inventory","x":205,"y":507,"width":44,"height":24},
     {"name":"inv_slot_20","location":"inventory","x":259,"y":507,"width":44,"height":24},
-    {"name":"slot1","location":"inventory","x":50,"y":345,"width":31,"height":11},
     {"name":"close_btn","location":"inventory","x":286,"y":49,"width":13,"height":15}
   ]
 }

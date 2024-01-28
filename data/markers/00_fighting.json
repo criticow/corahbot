@@ -6,6 +6,8 @@
     {"name":"swords","location":"fighting","x":161,"y":594,"width":24,"height":14},
     {"name":"gear","location":"fighting","x":283,"y":358,"width":20,"height":18},
     {"name":"book","location":"fighting","x":39,"y":358,"width":20,"height":18},
-    {"name":"buff_dekdun","location":"fighting","x":102,"y":558,"width":25,"height":12}
+    {"name":"buff_dekdun","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
+    {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10}
   ]
 }

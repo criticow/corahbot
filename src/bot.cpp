@@ -6,15 +6,16 @@ void Bot::run(const std::string &instance)
   int actionsPerSecond = 5;
   int crashCounter = 0;
 
-  WorkConfig &config = Store::configs[instance];
-  Summary &summary = Store::summaries[instance];
+  this->instance = instance;
+  config = &Store::configs[instance];
+  summary = &Store::summaries[instance];
 
-  std::string currentRoutine = CB_ROUTINE_NONE;
-  std::string currentAction = CB_ROUTINE_NONE;
+  currentRoutine = CB_ROUTINE_NONE;
+  currentAction = CB_ROUTINE_NONE;
 
-  if(config.farm)
+  if(config->farm)
     currentRoutine = CB_ROUTINE_FARM;
-  else if(config.combine && currentRoutine == CB_ROUTINE_NONE)
+  else if(config->combine && currentRoutine == CB_ROUTINE_NONE)
     currentRoutine = CB_ROUTINE_COMBINE;
 
   while(true)
@@ -33,11 +34,11 @@ void Bot::run(const std::string &instance)
     }
 
     // Sets the routine
-    if(config.farm && currentRoutine == CB_ROUTINE_NONE)
+    if(config->farm && currentRoutine == CB_ROUTINE_NONE)
       currentRoutine = CB_ROUTINE_FARM;
-    else if(config.combine && currentRoutine == CB_ROUTINE_NONE)
+    else if(config->combine && currentRoutine == CB_ROUTINE_NONE)
       currentRoutine = CB_ROUTINE_COMBINE;
-    else if(!config.farm)
+    else if(!config->farm)
       currentRoutine = CB_ROUTINE_NONE;
 
     std::string location = findLocation(instance);
@@ -50,32 +51,35 @@ void Bot::run(const std::string &instance)
       if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_NONE)
         currentAction = CB_ACTION_REFRESH_SWORDS;
 
-      handleFighting(instance, config, summary, currentRoutine, currentAction, swordAmount, potionAmount);
+      handleFighting(swordAmount, potionAmount);
     }
 
     if(location == CB_LOCATION_GEAR_GEAR || location == CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS)
-      handleGear(instance, config, summary, currentRoutine, currentAction);
+      handleGear();
 
     if(location == CB_LOCATION_BOOK_BOOK || location == CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS)
-      handleBook(instance, config, summary, currentRoutine, currentAction);
+      handleBook();
     
     if(location == CB_LOCATION_INVENTORY_INVENTORY)
-      handleInventory(instance, config, summary, currentRoutine, currentAction);
+      handleInventory();
 
     if(location == CB_LOCATION_ITEM_OPEN_ITEM_OPEN)
-      handleItemOpen(instance, config, summary, currentRoutine, currentAction);
+      handleItemOpen();
 
     if(location == CB_LOCATION_LOGIN_LOGIN)
-      handleLogin(instance, config, summary, currentRoutine, currentAction);
+      handleLogin();
 
     if(location == CB_LOCATION_HOME_HOME)
-      handleHome(instance, config, summary, currentRoutine, currentAction);
+      handleHome();
 
     if(location == CB_LOCATION_REFILL_REFILL)
-      handleRefill(instance, config, summary, currentRoutine, currentAction);
+      handleRefill();
 
     if(location == CB_LOCATION_MAP_MAP)
-      handleMap(instance, config, summary, currentRoutine, currentAction);
+      handleMap();
+
+    if(location == CB_LOCATION_QUEST_REWARD_QUEST_REWARD)
+      handleQuestReward();
 
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
@@ -110,16 +114,15 @@ void Bot::run(const std::string &instance)
 
     instanceMutex.lock();
 
-    summary.time = std::format("{:03d}:{:02d}:{:02d}", hours, minutes, seconds);
-    summary.location = location;
-    summary.routine = currentRoutine;
-    summary.nextAction = currentAction;
-    summary.swords = swordAmount == 9999 ? "unknown" : std::to_string(swordAmount);
-    summary.potions = potionAmount == 9999 ? "unknown" : std::to_string(potionAmount);
-    summary.crashs = std::to_string(crashCounter);
-
-    summary.ms = std::to_string(duration.count());
-    summary.actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
+    summary->time = std::format("{:03d}:{:02d}:{:02d}", hours, minutes, seconds);
+    summary->location = location;
+    summary->routine = currentRoutine;
+    summary->nextAction = currentAction;
+    summary->swords = swordAmount == 9999 ? "unknown" : std::to_string(swordAmount);
+    summary->potions = potionAmount == 9999 ? "unknown" : std::to_string(potionAmount);
+    summary->crashs = std::to_string(crashCounter);
+    summary->ms = std::to_string(duration.count());
+    summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
 
     instanceMutex.unlock();
 #endif
@@ -146,7 +149,7 @@ std::string Bot::findLocation(const std::string &instance)
   return location;
 }
 
-void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction, int &swords, int &potions)
+void Bot::handleFighting(int &swords, int &potions)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FIGHTING_FIGHTING];
 
@@ -161,21 +164,21 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
 
   potions = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
 
-  if(currentRoutine == CB_ROUTINE_FARM && potions > config.potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
+  if(currentRoutine == CB_ROUTINE_FARM && potions > config->potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
   }
 
-  if(currentRoutine == CB_ROUTINE_FARM && potions < config.potionsThreshold)
+  if(currentRoutine == CB_ROUTINE_FARM && potions < config->potionsThreshold)
   {
     // Open the options menu to start the refresh
     currentAction = CB_ACTION_REFRESH_POTIONS;
-    if(Store::refreshModes[config.refreshMode] == CB_REFRESH_MODE_LOGOUT)
+    if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
       std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }
-    else if (Store::refreshModes[config.refreshMode] == CB_REFRESH_MODE_CLOSE)
+    else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_CLOSE)
     {
       Emulator::killapp(instance, CORAH_PACKAGE_NAME);
       std::this_thread::sleep_for(std::chrono::milliseconds(1500));
@@ -192,7 +195,7 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
   
   swords = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
 
-  if(currentRoutine == CB_ROUTINE_FARM && swords < config.swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
+  if(currentRoutine == CB_ROUTINE_FARM && swords < config->swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
@@ -209,15 +212,30 @@ void Bot::handleFighting(const std::string &instance, WorkConfig &config, Summar
   if(currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // Check if there is buff applied to reapply
-    if(config.buffs && Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_BUFF_DEKDUN]))
+    if(config->buffs && Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_BUFF_DEKDUN]))
     {
       currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
     }
+  }
 
+  // Quests
+  if(currentRoutine == CB_ROUTINE_FARM && config->quests)
+  {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
   }
 }
 
-void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleGear()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_GEAR_GEAR];
   std::unordered_map<std::string, Marker> &markers2 = Store::markers[CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS];
@@ -238,7 +256,7 @@ void Bot::handleGear(const std::string &instance, WorkConfig &config, Summary &s
   }
 }
 
-void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleBook()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_BOOK_BOOK];
   std::unordered_map<std::string, Marker> &markers2 = Store::markers[CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS];
@@ -260,7 +278,7 @@ void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &s
 
 }
 
-void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleInventory()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_INVENTORY_INVENTORY];
   std::vector<Marker> invSlots{
@@ -279,7 +297,7 @@ void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summa
     {
       std::pair<bool, glm::ivec4> res = {false, glm::ivec4(0)};
       // Look for the first food in the list, if found click if not go to the next
-      for(auto &buff : config.selectedBuffs)
+      for(auto &buff : config->selectedBuffs)
       {
         for(auto &marker : invSlots)
         {
@@ -306,7 +324,7 @@ void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summa
       if(!res.first)
       {
         currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
-        config.buffs = false;
+        config->buffs = false;
       }
     }
 
@@ -323,7 +341,7 @@ void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summa
   }
 }
 
-void Bot::handleItemOpen(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleItemOpen()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ITEM_OPEN_ITEM_OPEN];
 
@@ -349,7 +367,7 @@ void Bot::handleItemOpen(const std::string &instance, WorkConfig &config, Summar
   }
 }
 
-void Bot::handleLogin(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleLogin()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
 
@@ -360,7 +378,7 @@ void Bot::handleLogin(const std::string &instance, WorkConfig &config, Summary &
   }
 }
 
-void Bot::handleHome(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleHome()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_HOME_HOME];
   bool shoudlRefill = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION]);
@@ -383,7 +401,7 @@ void Bot::handleHome(const std::string &instance, WorkConfig &config, Summary &s
   }
 }
 
-void Bot::handleRefill(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleRefill()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_REFILL_REFILL];
 
@@ -407,14 +425,14 @@ void Bot::handleRefill(const std::string &instance, WorkConfig &config, Summary 
   }
 }
 
-void Bot::handleMap(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
+void Bot::handleMap()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_MAP_MAP];
 
-  Monster &monster = Store::monsters[config.selectedPortal][config.selectedMonster];
+  Monster &monster = Store::monsters[config->selectedPortal][config->selectedMonster];
 
   // Check if it is not in the correct portal, to change location
-  if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config.selectedPortal]))
+  if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config->selectedPortal]))
   {
     LOGGER_DEBUG("It is not in the correct portal");
   }
@@ -423,5 +441,19 @@ void Bot::handleMap(const std::string &instance, WorkConfig &config, Summary &su
   {
     Emulator::click(instance, markers[monster.name]);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  }
+}
+
+void Bot::handleQuestReward()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_QUEST_REWARD_QUEST_REWARD];
+
+  if(currentRoutine == CB_ROUTINE_FARM)
+  {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
   }
 }

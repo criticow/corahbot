@@ -22,11 +22,18 @@ std::vector<Selectable> Store::potions{
   {"potion_triple_exp", "Triple EXP Potion"},
 };
 
+std::vector<Selectable> Store::scrolls{
+  {CB_POSITION_QUESTS_SCROLL_ANCIENT, "Ancient Scroll"},
+  {CB_POSITION_QUESTS_SCROLL_DEMONIAC, "Demoniac Scroll"},
+  {CB_POSITION_QUESTS_SCROLL_ARCANE, "Arcane Scroll"},
+  {CB_POSITION_QUESTS_SCROLL_SHADOW, "Shadow Scroll"},
+};
+
 std::unordered_map<std::string, std::string> Store::portals{
-  { "ranhain", "Ranhain"},
-  { "dekdun", "Dekdun"},
-  { "vulcardi", "Vulcardi"},
-  { "iceroost", "Iceroost"}
+  { CB_POSITION_MAP_RANHAIN, "Ranhain"},
+  { CB_POSITION_MAP_DEKDUN, "Dekdun"},
+  { CB_POSITION_MAP_VULCARDI, "Vulcardi"},
+  { CB_POSITION_MAP_ICEROOST, "Iceroost"}
   // "Vulcardi",
   // "Iceroost",
   // "Forilon",
@@ -38,40 +45,40 @@ std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_
 
 std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
   {
-    "ranhain",
+    CB_POSITION_MAP_RANHAIN,
     {
-      { "bear", "Bear (Lv.3)" },
-      { "giant_ant", "Giant Ant (Lv.8)" },
-      { "chinavia", "Chinavia (Lv.15)" },
-      { "enraged_turtle", "Enraged Turtle (Lv.23)" },
-      { "goblin_thief", "Goblin Thief (Lv.26)" },
-      { "scavanger", "Scavanger (Lv.32)" },
-      { "amphnaly", "Amphnaly (Lv.40)" },
-      { "goblin_chief", "Goblin Chief (Lv.50)" }
+      { CB_POSITION_MAP_BEAR, "Bear (Lv.3)" },
+      { CB_POSITION_MAP_GIANT_ANT, "Giant Ant (Lv.8)" },
+      { CB_POSITION_MAP_CHINAVIA, "Chinavia (Lv.15)" },
+      { CB_POSITION_MAP_ENRAGED_TURTLE, "Enraged Turtle (Lv.23)" },
+      { CB_POSITION_MAP_GOBLIN_THIEF, "Goblin Thief (Lv.26)" },
+      { CB_POSITION_MAP_SCAVANGER, "Scavanger (Lv.32)" },
+      { CB_POSITION_MAP_AMPHNALY, "Amphnaly (Lv.40)" },
+      { CB_POSITION_MAP_GOBLIN_CHIEF, "Goblin Chief (Lv.50)" }
     }
   },
   {
-    "dekdun",
+    CB_POSITION_MAP_DEKDUN,
     {
-      { "skeleton_worker", "Skeleton Worker (Lv.60)" },
-      { "lost_amummy", "Lost Amummy (Lv.70)" },
-      { "skeleton_captain", "Skeleton Captain (Lv.80)" },
-      { "skeleton_wizard", "Skeleton Wizard (Lv.85)" },
-      { "skeleton_thief", "Skeleton Thief (Lv.90)" },
-      { "thia", "Thia (Lv.100)" },
-      { "skeleton_king", "Skeleton King (Lv.105)" }
+      { CB_POSITION_MAP_SKELETON_WORKER, "Skeleton Worker (Lv.60)" },
+      { CB_POSITION_MAP_LOST_AMUMMY, "Lost Amummy (Lv.70)" },
+      { CB_POSITION_MAP_SKELETON_CAPTAIN, "Skeleton Captain (Lv.80)" },
+      { CB_POSITION_MAP_SKELETON_WIZARD, "Skeleton Wizard (Lv.85)" },
+      { CB_POSITION_MAP_SKELETON_THIEF, "Skeleton Thief (Lv.90)" },
+      { CB_POSITION_MAP_THIA, "Thia (Lv.100)" },
+      { CB_POSITION_MAP_SKELETON_KING, "Skeleton King (Lv.105)" }
     }
   },
   {
-    "vulcardi",
+    CB_POSITION_MAP_VULCARDI,
     {
-      { "balor", "Balor (Lv.115)"}
+      { CB_POSITION_MAP_BALOR, "Balor (Lv.115)"}
     }
   },
   {
-    "iceroost",
+    CB_POSITION_MAP_ICEROOST,
     {
-      { "rinch", "Rinch (Lv.120)"}
+      { CB_POSITION_MAP_RINCH, "Rinch (Lv.120)"}
     }
   }
 };

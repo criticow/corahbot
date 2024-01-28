@@ -95,6 +95,7 @@ void GUI::renderUI()
         {
           this->farmUI(instance);
           this->buffsUI(instance);
+          this->questsUI(instance);
           this->summaryUI(instance);
           ImGui::EndTabBar();
         }
@@ -294,6 +295,54 @@ void GUI::buffsUI(const std::string &instance)
 
     ImGui::Columns(1);
 
+    ImGui::EndTabItem();
+  }
+}
+
+void GUI::questsUI(const std::string & instance)
+{
+  WorkConfig &config = Store::configs[instance];
+  if(ImGui::BeginTabItem("Quests"))
+  {
+    ImGui::Checkbox("Enable", &config.quests);
+
+    if(!config.quests)
+    {
+      ImGui::EndTabItem();
+      return;
+    }
+
+    ImGui::Spacing();
+
+    ImGui::Columns(2, "BuffsColumns", false);
+
+    ImGui::SeparatorText("Scrolls");
+    for(auto &scroll : Store::scrolls)
+    {
+      std::vector<std::string>::iterator it = std::find(config.selectedQuests.begin(), config.selectedQuests.end(), scroll.name);
+      bool isSelected = it != config.selectedQuests.end();
+      size_t index;
+      std::string name = scroll.displayName;
+
+      if(isSelected)
+      {
+        index = std::distance(config.selectedQuests.begin(), it);
+        name = std::to_string(index + 1) + " - " + name;
+      }
+
+      if(ImGui::Selectable(name.c_str(), isSelected))
+      {
+        // Already exists in the list of selected buffs
+        if(isSelected)
+        {
+          config.selectedQuests.erase(std::remove(config.selectedQuests.begin(), config.selectedQuests.end(), scroll.name), config.selectedQuests.end());
+          continue;
+        }
+
+        config.selectedQuests.push_back(scroll.name);
+      }
+    }
+    ImGui::Columns(1);
     ImGui::EndTabItem();
   }
 }
