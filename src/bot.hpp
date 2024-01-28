@@ -33,4 +33,6 @@ class Bot
   void handleMap();
   void handleQuests();
   void handleQuestReward();
+
+  void waitFor(int amount, int deviation = 0);
 };

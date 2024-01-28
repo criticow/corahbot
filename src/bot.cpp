@@ -1,5 +1,10 @@
 #include "bot.hpp"
 
+void Bot::waitFor(int amount, int deviation)
+{
+  int finalAmount = Random::choose(amount, amount + deviation);
+  std::this_thread::sleep_for(std::chrono::milliseconds(finalAmount));
+}
 
 void Bot::run(const std::string &instance)
 {
@@ -87,20 +92,20 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
 
     if(location == CB_LOCATION_APP_CLOSED_APP_CLOSED)
     {
       crashCounter++;
       Emulator::click(instance, Store::markers[CB_LOCATION_APP_CLOSED_APP_CLOSED][CB_LOCATION_APP_CLOSED_APP_CLOSED]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+      waitFor(1500, 100);
     }
 
     if(location == CB_LOCATION_APP_CRASHED_APP_CRASHED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -132,7 +137,7 @@ void Bot::run(const std::string &instance)
 
     // This is so the bot takes n actionsPerSecond
     if(hasTimeLeft)
-      std::this_thread::sleep_for(std::chrono::milliseconds((1000 / actionsPerSecond) - duration.count()));
+      waitFor((int)(1000 / actionsPerSecond) - duration.count());
   }
 }
 
@@ -179,12 +184,12 @@ void Bot::handleFighting(int &swords, int &potions)
     if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(700));
+      waitFor(700, 100);
     }
     else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_CLOSE)
     {
       Emulator::killapp(instance, CORAH_PACKAGE_NAME);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+      waitFor(1500, 100);
     }
   }
   // END POTIONS ACTIONS
@@ -202,14 +207,14 @@ void Bot::handleFighting(int &swords, int &potions)
   {
     // If the current swords is below the threshold the swords should be reset
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    waitFor(3000, 100);
   }
   // END SWORDS ACTIONS
 
   if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    waitFor(500, 100);
   }
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS)
@@ -227,13 +232,13 @@ void Bot::handleFighting(int &swords, int &potions)
     if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]))
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
 
     if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]))
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
   }
 }
@@ -248,13 +253,13 @@ void Bot::handleGear()
     if(Emulator::compareImages(instance, markers[CB_POSITION_GEAR_LOGOUT]))
     {
       Emulator::click(instance, markers[CB_POSITION_GEAR_LOGOUT]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      waitFor(1000, 100);
     }
 
     if(Emulator::compareImages(instance, markers2[CB_POSITION_GEAR_GUILDLESS_LOGOUT]))
     {
       Emulator::click(instance, markers2[CB_POSITION_GEAR_GUILDLESS_LOGOUT]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      waitFor(1000, 100);
     }
   }
 }
@@ -269,13 +274,13 @@ void Bot::handleBook()
     if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_BAG]))
     {
       Emulator::click(instance, markers[CB_POSITION_BOOK_BAG]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+      waitFor(1500, 100);
     }
 
     if(Emulator::compareImages(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]))
     {
       Emulator::click(instance, markers2[CB_POSITION_BOOK_GUILDLESS_BAG]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+      waitFor(1500, 100);
     }
   }
 
@@ -313,7 +318,7 @@ void Bot::handleInventory()
           if(res.first)
           {
             Emulator::click(instance, {marker.x + res.second.x, marker.y + res.second.y, res.second.z, res.second.w});
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            waitFor(500, 100);
             break;
           }
         }
@@ -338,7 +343,7 @@ void Bot::handleInventory()
       {
         currentAction = CB_ACTION_REFRESH_SWORDS;
         Emulator::click(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]);
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        waitFor(500, 100);
       }
     }
   }
@@ -364,7 +369,7 @@ void Bot::handleItemOpen()
       {
         currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
         Emulator::click(instance, {useBtnRegion.x + res.second.x, useBtnRegion.y + res.second.y, res.second.z, res.second.w});
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        waitFor(1000, 100);
       }
     }
   }
@@ -377,7 +382,7 @@ void Bot::handleLogin()
   if(currentRoutine == CB_ROUTINE_FARM)
   {
     Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_BTN]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    waitFor(2000, 100);
   }
 }
 
@@ -391,7 +396,7 @@ void Bot::handleHome()
     if(Emulator::compareImages(instance, markers[CB_POSITION_HOME_REFILL_BTN]))
     {
       Emulator::click(instance, markers[CB_POSITION_HOME_REFILL_BTN]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
 
     return;
@@ -400,7 +405,7 @@ void Bot::handleHome()
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_HOME_START_BTN]))
   {
     Emulator::click(instance, markers[CB_POSITION_HOME_START_BTN]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    waitFor(500, 100);
   }
 }
 
@@ -411,20 +416,20 @@ void Bot::handleRefill()
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]))
   {
     Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    waitFor(300, 100);
   }
 
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]))
   {
     Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    waitFor(1500, 100);
   }
 
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]))
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
     Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    waitFor(300, 100);
   }
 }
 
@@ -443,7 +448,7 @@ void Bot::handleMap()
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[monster.name]))
   {
     Emulator::click(instance, markers[monster.name]);
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    waitFor(3000, 100);
   }
 }
 
@@ -456,10 +461,11 @@ void Bot::handleQuestReward()
     if(Emulator::compareImages(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]))
     {
       Emulator::click(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      waitFor(1000, 100);
     }
   }
 }
+
 
 void Bot::handleQuests()
 {
@@ -471,7 +477,7 @@ void Bot::handleQuests()
     Marker &dragEnd = markers[CB_POSITION_QUESTS_DRAG_END];
 
     Emulator::drag(instance, {dragStart.x, dragStart.y}, {dragEnd.x, dragEnd.y});
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    waitFor(1500, 100);
 
     bool res = false;
     for(auto &quest : config->selectedQuests)
@@ -481,7 +487,7 @@ void Bot::handleQuests()
       if(res)
       {
         Emulator::click(instance, markers[quest]);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        waitFor(1500, 100);
         break;
       }
     }
@@ -490,7 +496,7 @@ void Bot::handleQuests()
     {
       config->quests = false;
       Emulator::click(instance, markers[CB_POSITION_QUESTS_CLOSE_BTN]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      waitFor(500, 100);
     }
   }
 }
