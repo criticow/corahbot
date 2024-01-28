@@ -2,6 +2,7 @@
 #include "bot.hpp"
 
 std::string console = "C:/Nox/bin/NoxConsole.exe";
+tesseract::TessBaseAPI Emulator::tess;
 
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
   if (IsWindowVisible(hWnd)) {
@@ -335,4 +336,41 @@ cv::Mat Emulator::printscreen(const std::string &windowTitle, int x, int y, int 
 cv::Mat Emulator::printscreen(const std::string &windowTitle, Marker &marker)
 {
   return printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+}
+
+std::string Emulator::textFromImage(const std::string &windowTitle, Marker &marker)
+{
+  std::string text;
+
+  cv::Mat image = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  // Convert cv::Mat to RGB format (STB Image uses RGB)
+  cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+
+  // Get image dimensions
+  int width = image.cols;
+  int height = image.rows;
+  int channels = image.channels();
+
+  // Read the image using stb_image
+  unsigned char* imageData = image.data;
+  
+  // Set the image for OCR
+  tess.SetImage(imageData, width, height, channels, channels * width);
+
+  // Perform OCR and get the result
+  char* outText = tess.GetUTF8Text();
+
+  text = outText;
+
+  // Release resources
+  delete[] outText;
+
+  return text;
+}
+
+void Emulator::initTess()
+{
+  ASSERT(!tess.Init("data/tess", "eng", tesseract::OEM_DEFAULT), "Error initializing tesseract");
+  tess.SetVariable("tessedit_char_whitelist", "0123456789");
 }

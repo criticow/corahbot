@@ -6,6 +6,7 @@
 #include <Psapi.h>
 #include <wingdi.h>
 #include <opencv2/opencv.hpp>
+#include <tesseract/baseapi.h>
 #include "store.hpp"
 
 #define CORAH_PACKAGE_NAME "com.coorangar.corah"
@@ -39,4 +40,10 @@ class Emulator
   static cv::Mat printscreen(const std::string &windowTitle);
   static cv::Mat printscreen(const std::string &windowTitle, int x, int y, int width, int height);
   static cv::Mat printscreen(const std::string &windowTitle, Marker &marker);
+
+  static std::string textFromImage(const std::string &windowTitle, Marker &marker);
+
+  static void initTess();
+  private:
+  static tesseract::TessBaseAPI tess;
 };
