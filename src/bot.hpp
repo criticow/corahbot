@@ -31,5 +31,6 @@ class Bot
   void handleHome();
   void handleRefill();
   void handleMap();
+  void handleQuests();
   void handleQuestReward();
 };

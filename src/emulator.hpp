@@ -27,7 +27,7 @@ class Emulator
   static void click(const std::string &windowTitle, glm::ivec2 point);
   static void click(const std::string &windowTitle, glm::ivec4 point);
   static void click(const std::string &windowTitle, Marker &marker);
-  static void drag(const std::string &windowTitle, glm::ivec2 &start, glm::ivec2 &end);
+  static void drag(const std::string &windowTitle, glm::ivec2 start, glm::ivec2 end);
 
   static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, const std::string &needlePath, float threshold);
   static std::pair<bool, glm::ivec4> find(const std::string &windowTitle, Marker marker, const std::string &haystackPath);

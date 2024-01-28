@@ -77,6 +77,9 @@ void Bot::run(const std::string &instance)
 
     if(location == CB_LOCATION_MAP_MAP)
       handleMap();
+    
+    if(location == CB_LOCATION_QUESTS_QUESTS)
+      handleQuests();
 
     if(location == CB_LOCATION_QUEST_REWARD_QUEST_REWARD)
       handleQuestReward();
@@ -176,7 +179,7 @@ void Bot::handleFighting(int &swords, int &potions)
     if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
-      std::this_thread::sleep_for(std::chrono::milliseconds(300));
+      std::this_thread::sleep_for(std::chrono::milliseconds(700));
     }
     else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_CLOSE)
     {
@@ -453,6 +456,40 @@ void Bot::handleQuestReward()
     if(Emulator::compareImages(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]))
     {
       Emulator::click(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+  }
+}
+
+void Bot::handleQuests()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_QUESTS_QUESTS];
+
+  if(currentRoutine == CB_ROUTINE_FARM && config->quests)
+  {
+    Marker &dragStart = markers[CB_POSITION_QUESTS_DRAG_START];
+    Marker &dragEnd = markers[CB_POSITION_QUESTS_DRAG_END];
+
+    Emulator::drag(instance, {dragStart.x, dragStart.y}, {dragEnd.x, dragEnd.y});
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+
+    bool res = false;
+    for(auto &quest : config->selectedQuests)
+    {
+      res = !Emulator::compareImages(instance, markers[quest]);
+
+      if(res)
+      {
+        Emulator::click(instance, markers[quest]);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+        break;
+      }
+    }
+
+    if(!res)
+    {
+      config->quests = false;
+      Emulator::click(instance, markers[CB_POSITION_QUESTS_CLOSE_BTN]);
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
   }

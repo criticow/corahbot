@@ -7,7 +7,8 @@
     {"name":"scroll_ancient","location":"quests","x":186,"y":180,"width":44,"height":13},
     {"name":"scroll_demoniac","location":"quests","x":184,"y":295,"width":45,"height":10},
     {"name":"scroll_arcane","location":"quests","x":186,"y":407,"width":44,"height":10},
-    {"name":"scroll_shadow","location":"quests","x":186,"y":520,"width":44,"height":10}
+    {"name":"scroll_shadow","location":"quests","x":186,"y":520,"width":44,"height":10},
+    {"name":"close_btn","location":"quests","x":272,"y":77,"width":13,"height":13}
   ]
 }
 

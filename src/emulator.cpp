@@ -136,7 +136,7 @@ void Emulator::click(const std::string & windowTitle, Marker & marker)
   click(windowTitle, glm::ivec2(x, y));
 }
 
-void Emulator::drag(const std::string &windowTitle, glm::ivec2 &start, glm::ivec2 &end)
+void Emulator::drag(const std::string &windowTitle, glm::ivec2 start, glm::ivec2 end)
 {
   HWND hWnd = FindWindow(nullptr, windowTitle.c_str());
 
@@ -147,9 +147,20 @@ void Emulator::drag(const std::string &windowTitle, glm::ivec2 &start, glm::ivec
 
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-  LPARAM endParam = MAKELPARAM(start.x, start.y);
+  LPARAM endParam;
 
-  SendMessage(hWnd, WM_MOUSEMOVE, MK_LBUTTON, endParam);
+  int numSteps = 10;
+
+  for(size_t i = 1; i <= numSteps; i++)
+  {
+    int newX = start.x + i * (end.x - start.x) / numSteps;
+    int newY = start.y + i * (end.y - start.y) / numSteps;
+
+    endParam = MAKELPARAM(newX, newY);
+    SendMessage(hWnd, WM_MOUSEMOVE, MK_LBUTTON, endParam);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
 
   // Send left mouse button up message
   SendMessage(hWnd, WM_LBUTTONUP, 0, endParam);
