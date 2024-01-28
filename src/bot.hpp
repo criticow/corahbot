@@ -20,9 +20,12 @@ class Bot
   Summary *summary = nullptr;
   std::string currentRoutine;
   std::string currentAction;
+  int swordAmount = 9999;
+  int potionAmount = 9999;
+  int questsDone = 0;
 
   std::string findLocation(const std::string &instance);
-  void handleFighting(int &swords, int &potions);
+  void handleFighting();
   void handleGear();
   void handleBook();
   void handleInventory();

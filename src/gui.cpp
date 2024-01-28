@@ -445,6 +445,7 @@ void GUI::summaryUI(const std::string &instance)
     ImGui::Text(("Swords: " + summary.swords).c_str());
     ImGui::Text(("Potions: " + summary.potions).c_str());
     ImGui::Text(("Crashs: " + summary.crashs).c_str());
+    ImGui::Text(("Quests Done: " + summary.questsDone).c_str());
 
     Store::mutexes[instance].unlock();
 

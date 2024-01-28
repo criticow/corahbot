@@ -48,15 +48,15 @@ void Bot::run(const std::string &instance)
 
     std::string location = findLocation(instance);
 
-    int swordAmount = 9999;
-    int potionAmount = 9999;
+    swordAmount = 9999;
+    potionAmount = 9999;
 
     if(location == CB_LOCATION_FIGHTING_FIGHTING)
     {
       if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_NONE)
         currentAction = CB_ACTION_REFRESH_SWORDS;
 
-      handleFighting(swordAmount, potionAmount);
+      handleFighting();
     }
 
     if(location == CB_LOCATION_GEAR_GEAR || location == CB_LOCATION_GEAR_GUILDLESS_GEAR_GUILDLESS)
@@ -131,6 +131,7 @@ void Bot::run(const std::string &instance)
     summary->crashs = std::to_string(crashCounter);
     summary->ms = std::to_string(duration.count());
     summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
+    summary->questsDone = std::to_string(questsDone);
 
     instanceMutex.unlock();
 #endif
@@ -157,7 +158,7 @@ std::string Bot::findLocation(const std::string &instance)
   return location;
 }
 
-void Bot::handleFighting(int &swords, int &potions)
+void Bot::handleFighting()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FIGHTING_FIGHTING];
 
@@ -170,14 +171,14 @@ void Bot::handleFighting(int &swords, int &potions)
     return;
   }
 
-  potions = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
+  potionAmount = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
 
-  if(currentRoutine == CB_ROUTINE_FARM && potions > config->potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
+  if(currentRoutine == CB_ROUTINE_FARM && potionAmount > config->potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
   }
 
-  if(currentRoutine == CB_ROUTINE_FARM && potions < config->potionsThreshold)
+  if(currentRoutine == CB_ROUTINE_FARM && potionAmount < config->potionsThreshold)
   {
     // Open the options menu to start the refresh
     currentAction = CB_ACTION_REFRESH_POTIONS;
@@ -201,9 +202,9 @@ void Bot::handleFighting(int &swords, int &potions)
     return;
   }
   
-  swords = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
+  swordAmount = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
 
-  if(currentRoutine == CB_ROUTINE_FARM && swords < config->swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
+  if(currentRoutine == CB_ROUTINE_FARM && swordAmount < config->swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
@@ -460,6 +461,7 @@ void Bot::handleQuestReward()
   {
     if(Emulator::compareImages(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]))
     {
+      questsDone++;
       Emulator::click(instance, markers[CB_POSITION_QUEST_REWARD_CLAIM_BTN]);
       waitFor(1000, 100);
     }

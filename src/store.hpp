@@ -83,6 +83,7 @@ struct Summary
   std::string swords = "unknown";
   std::string potions = "unknown";
   std::string crashs = "0";
+  std::string questsDone = "0";
 };
 
 class Store
