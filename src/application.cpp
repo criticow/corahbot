@@ -50,7 +50,6 @@ void Application::setup()
   this->gui.init();
   this->toggleVsync();
   Store::loadMarkers();
-  Emulator::initTess();
 }
 
 void Application::appLoop()

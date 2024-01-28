@@ -263,11 +263,14 @@ void Bot::handleBook(const std::string &instance, WorkConfig &config, Summary &s
 void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summary &summary, std::string &currentRoutine, std::string &currentAction)
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_INVENTORY_INVENTORY];
-  std::vector<Marker> invLines{
-    markers[CB_POSITION_INVENTORY_INV_LINE1],
-    markers[CB_POSITION_INVENTORY_INV_LINE2],
-    markers[CB_POSITION_INVENTORY_INV_LINE3],
-    markers[CB_POSITION_INVENTORY_INV_LINE4]
+  std::vector<Marker> invSlots{
+    markers[CB_POSITION_INVENTORY_INV_SLOT_1], markers[CB_POSITION_INVENTORY_INV_SLOT_2], markers[CB_POSITION_INVENTORY_INV_SLOT_3],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_4], markers[CB_POSITION_INVENTORY_INV_SLOT_5], markers[CB_POSITION_INVENTORY_INV_SLOT_6],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_7], markers[CB_POSITION_INVENTORY_INV_SLOT_8], markers[CB_POSITION_INVENTORY_INV_SLOT_9],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_10], markers[CB_POSITION_INVENTORY_INV_SLOT_11], markers[CB_POSITION_INVENTORY_INV_SLOT_12],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_13], markers[CB_POSITION_INVENTORY_INV_SLOT_14], markers[CB_POSITION_INVENTORY_INV_SLOT_15],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_16], markers[CB_POSITION_INVENTORY_INV_SLOT_17], markers[CB_POSITION_INVENTORY_INV_SLOT_18],
+    markers[CB_POSITION_INVENTORY_INV_SLOT_19], markers[CB_POSITION_INVENTORY_INV_SLOT_20]
   };
 
   if(currentRoutine == CB_ROUTINE_FARM)
@@ -278,7 +281,7 @@ void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summa
       // Look for the first food in the list, if found click if not go to the next
       for(auto &buff : config.selectedBuffs)
       {
-        for(auto &marker : invLines)
+        for(auto &marker : invSlots)
         {
           cv::Mat needle = cv::imread("data/images/items/" + buff + ".png");
           cv::Mat haysteack = Emulator::printscreen(instance, marker.x, marker.y, marker.width, marker.height);
@@ -299,10 +302,11 @@ void Bot::handleInventory(const std::string &instance, WorkConfig &config, Summa
           break;
       }
 
-      // Not found, just close
+      // Not found, close and deactivate buffing
       if(!res.first)
       {
         currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
+        config.buffs = false;
       }
     }
 
