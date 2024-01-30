@@ -34,17 +34,9 @@ std::unordered_map<std::string, std::string> Store::portals{
   { CB_POSITION_MAP_DEKDUN, "Dekdun"},
   { CB_POSITION_MAP_VULCARDI, "Vulcardi"},
   { CB_POSITION_MAP_ICEROOST, "Iceroost"}
-  // "Vulcardi",
-  // "Iceroost",
   // "Forilon",
   // "Airos",
   // "Mitron"
-};
-
-std::vector<Selectable> Store::chips{
-  {"1", "Amethyst Chip"},
-  {"2", "Topaz Chip"},
-  {"3", "Opal Chip"},
 };
 
 std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_MODE_CLOSE};
@@ -78,7 +70,9 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
   {
     CB_POSITION_MAP_VULCARDI,
     {
-      { CB_POSITION_MAP_BALOR, "Balor (Lv.115)"}
+      { CB_POSITION_MAP_BALOR, "Balor (Lv.115)"},
+      { CB_POSITION_MAP_GARZON, "Garzon (Lv.130)"},
+      { CB_POSITION_MAP_PRO_GIANT, "Pro Giant (Lv.150)"}
     }
   },
   {
@@ -87,94 +81,6 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
       { CB_POSITION_MAP_RINCH, "Rinch (Lv.120)"}
     }
   }
-};
-
-std::unordered_map<std::string, int> Store::swordsMap{
-  {"00", -1},
-  {"240", 0},
-  {"480", 1},
-  {"720", 2},
-  {"960", 3},
-  {"1200", 4},
-  {"1440", 5},
-  {"1680", 6},
-  {"1920", 7},
-  {"2160", 8},
-  {"2400", 9},
-  {"2640", 10},
-  {"2880", 11},
-  {"3120", 12},
-  {"3360", 13},
-  {"3600", 14},
-  {"3840", 15},
-  {"4080", 16},
-  {"4320", 17},
-  {"4560", 18},
-  {"4800", 19},
-  {"5040", 20},
-  {"5280", 21},
-  {"5520", 22},
-  {"5760", 23},
-  {"6000", 24},
-  {"6240", 25},
-  {"6480", 26},
-  {"6720", 27},
-  {"6960", 28},
-  {"7200", 29},
-  {"7440", 30},
-  {"7680", 31},
-  {"7920", 32},
-  {"8160", 33},
-  {"8400", 34},
-  {"8640", 35},
-  {"8880", 36},
-  {"9120", 37},
-  {"9360", 38},
-  {"9600", 39},
-  {"9840", 40},
-  {"10080", 41},
-  {"10320", 42},
-  {"10560", 43},
-  {"10800", 44},
-  {"11040", 45},
-  {"11280", 46},
-  {"11520", 47},
-  {"11760", 48},
-  {"12000", 49},
-  {"12240", 50},
-};
-
-std::unordered_map<std::string, int> Store::potionsMap{
-  {"00", 0},
-  {"120", 1},
-  {"240", 2},
-  {"360", 3},
-  {"480", 4},
-  {"600", 5},
-  {"720", 6},
-  {"840", 7},
-  {"960", 8},
-  {"1080", 9},
-  {"1200", 10},
-  {"1320", 11},
-  {"1440", 12},
-  {"1560", 13},
-  {"1680", 14},
-  {"1800", 15},
-  {"1920", 16},
-  {"2040", 17},
-  {"2160", 18},
-  {"2280", 19},
-  {"2400", 20},
-  {"2520", 21},
-  {"2640", 22},
-  {"2760", 23},
-  {"2880", 24},
-  {"3000", 25},
-  {"3120", 26},
-  {"3240", 27},
-  {"3360", 28},
-  {"3480", 29},
 };
 
 void Store::loadMarkers()

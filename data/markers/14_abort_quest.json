@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"abort_quest","location":"abort_quest","x":192,"y":300,"width":35,"height":9},
+  "markers": [
+    {"name":"no_btn","location":"abort_quest","x":208,"y":429,"width":21,"height":9}
+  ]
+}

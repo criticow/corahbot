@@ -20,11 +20,13 @@ class Bot
   Summary *summary = nullptr;
   std::string currentRoutine;
   std::string currentAction;
-  int swordAmount = 9999;
-  int potionAmount = 9999;
   int questsDone = 0;
+  std::string location = CB_LOCATION_UNKNOWN;
+  bool refreshSwords = false;
+  bool refreshPotions = false;
 
-  std::string findLocation(const std::string &instance);
+  void findLocation(const std::string &instance);
+
   void handleFighting();
   void handleGear();
   void handleBook();
@@ -36,6 +38,7 @@ class Bot
   void handleMap();
   void handleQuests();
   void handleQuestReward();
+  void handleAborQuest();
 
   void waitFor(int amount, int deviation = 0);
 };

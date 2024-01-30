@@ -10,10 +10,9 @@
 class WorkConfig
 {
   public:
-  bool farm;
-  bool combine;
-  bool buffs;
-  bool quests;
+  bool farm = false;;
+  bool buffs = false;
+  bool quests = false;
   int refreshMode = 0;
   std::string selectedPortal = CB_POSITION_MAP_RANHAIN;
   int selectedMonster = 0;
@@ -22,13 +21,12 @@ class WorkConfig
 
   std::vector<std::string> selectedBuffs;
   std::vector<std::string> selectedQuests;
-  std::vector<std::string> selectedChips;
 
   WorkConfig(){};
   WorkConfig(const std::string &json);
 
   std::string toJson();
   private:
-  rapidjson::Value parseArray(rapidjson::Document &document, std::vector<std::string> &list);
-  void loadList(const std::string &name, std::vector<std::string> &list, rapidjson::Document &document);
+  rapidjson::Value createArrayFromVector(rapidjson::Document &document, std::vector<std::string> &vector);
+  void loadVectorFromArray(const std::string &name, std::vector<std::string> &vector, rapidjson::Document &document);
 };

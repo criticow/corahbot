@@ -30,4 +30,6 @@ class GUI : public BaseGUI
   void buffsUI(const std::string &instance);
   void questsUI(const std::string &instance);
   void summaryUI(const std::string &instance);
+
+  void selectableList(const std::string &instance, const std::string &name, std::vector<Selectable> &selectableList, std::vector<std::string> &selectedItems);
 };

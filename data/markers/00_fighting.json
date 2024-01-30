@@ -2,11 +2,13 @@
   "version": "0.0.1",
   "identifier": {"name":"fighting","location":"fighting","x":98,"y":590,"width":19,"height":11},
   "markers": [
-    {"name":"potions","location":"fighting","x":81,"y":559,"width":12,"height":9},
-    {"name":"swords","location":"fighting","x":161,"y":594,"width":24,"height":14},
+    {"name":"potion_0","location":"fighting","x":81,"y":559,"width":12,"height":9},
+    {"name":"potion_1","location":"fighting","x":81,"y":559,"width":12,"height":9},
+    {"name":"no_sword","location":"fighting","x":150,"y":594,"width":50,"height":14},
     {"name":"gear","location":"fighting","x":283,"y":358,"width":20,"height":18},
     {"name":"book","location":"fighting","x":39,"y":358,"width":20,"height":18},
     {"name":"buff_dekdun","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"buff_vulcardi","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
     {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10}
   ]

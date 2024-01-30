@@ -20,8 +20,6 @@ void Bot::run(const std::string &instance)
 
   if(config->farm)
     currentRoutine = CB_ROUTINE_FARM;
-  else if(config->combine && currentRoutine == CB_ROUTINE_NONE)
-    currentRoutine = CB_ROUTINE_COMBINE;
 
   while(true)
   {
@@ -41,15 +39,10 @@ void Bot::run(const std::string &instance)
     // Sets the routine
     if(config->farm && currentRoutine == CB_ROUTINE_NONE)
       currentRoutine = CB_ROUTINE_FARM;
-    else if(config->combine && currentRoutine == CB_ROUTINE_NONE)
-      currentRoutine = CB_ROUTINE_COMBINE;
     else if(!config->farm)
       currentRoutine = CB_ROUTINE_NONE;
 
-    std::string location = findLocation(instance);
-
-    swordAmount = 9999;
-    potionAmount = 9999;
+    findLocation(instance);
 
     if(location == CB_LOCATION_FIGHTING_FIGHTING)
     {
@@ -80,6 +73,9 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_REFILL_REFILL)
       handleRefill();
 
+    if(location == CB_LOCATION_REFILL_PREMIUM_REFILL_PREMIUM)
+      handleRefill();
+
     if(location == CB_LOCATION_MAP_MAP)
       handleMap();
     
@@ -88,6 +84,9 @@ void Bot::run(const std::string &instance)
 
     if(location == CB_LOCATION_QUEST_REWARD_QUEST_REWARD)
       handleQuestReward();
+    
+    if(location == CB_LOCATION_ABORT_QUEST_ABORT_QUEST)
+      handleAborQuest();
 
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
@@ -113,7 +112,6 @@ void Bot::run(const std::string &instance)
 
     int hasTimeLeft = duration.count() < 1000 / actionsPerSecond;
 
-#ifndef NDEBUG
     int totalSeconds = static_cast<int>(tempo.getTime());
 
     int hours = totalSeconds / 3600;
@@ -126,15 +124,14 @@ void Bot::run(const std::string &instance)
     summary->location = location;
     summary->routine = currentRoutine;
     summary->nextAction = currentAction;
-    summary->swords = swordAmount == 9999 ? "unknown" : std::to_string(swordAmount);
-    summary->potions = potionAmount == 9999 ? "unknown" : std::to_string(potionAmount);
     summary->crashs = std::to_string(crashCounter);
+    summary->refreshSwords =  refreshSwords ? "true" : "false";
+    summary->refreshPotions =  refreshPotions ? "true" : "false";
     summary->ms = std::to_string(duration.count());
     summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
     summary->questsDone = std::to_string(questsDone);
 
     instanceMutex.unlock();
-#endif
 
     // This is so the bot takes n actionsPerSecond
     if(hasTimeLeft)
@@ -142,9 +139,9 @@ void Bot::run(const std::string &instance)
   }
 }
 
-std::string Bot::findLocation(const std::string &instance)
+void Bot::findLocation(const std::string &instance)
 {
-  std::string location = CB_LOCATION_UNKNOWN;
+  location = CB_LOCATION_UNKNOWN;
 
   for(auto &[name, markers] : Store::markers)
   {
@@ -154,8 +151,6 @@ std::string Bot::findLocation(const std::string &instance)
       break;
     }
   }
-
-  return location;
 }
 
 void Bot::handleFighting()
@@ -163,29 +158,25 @@ void Bot::handleFighting()
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FIGHTING_FIGHTING];
 
   // START POTION ACTIONS
-  std::pair<bool, glm::ivec4> potionRes = Emulator::find(instance, markers[CB_POSITION_FIGHTING_POTIONS], "atlas/potions");
+  refreshSwords = Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
+  bool potion0 = Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_POTION_0]);
+  bool potion1 = Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_POTION_1]);
 
-  // If potions are not visible there is nothing more to do here
-  if(!potionRes.first)
-  {
-    return;
-  }
+  refreshPotions = potion0 || potion1;
 
-  potionAmount = Store::potionsMap[std::format("{}{}", potionRes.second.x, potionRes.second.y)];
-
-  if(currentRoutine == CB_ROUTINE_FARM && potionAmount > config->potionsThreshold && currentAction == CB_ACTION_REFRESH_POTIONS)
+  if(currentRoutine == CB_ROUTINE_FARM && !refreshPotions && currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
   }
 
-  if(currentRoutine == CB_ROUTINE_FARM && potionAmount < config->potionsThreshold)
+  if(currentRoutine == CB_ROUTINE_FARM && refreshPotions)
   {
     // Open the options menu to start the refresh
     currentAction = CB_ACTION_REFRESH_POTIONS;
     if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
     {
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
-      waitFor(700, 100);
+      waitFor(1500, 100);
     }
     else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_CLOSE)
     {
@@ -196,19 +187,11 @@ void Bot::handleFighting()
   // END POTIONS ACTIONS
 
   // START SWORDS ACTIONS
-  std::pair<bool, glm::ivec4> swordsRes = Emulator::find(instance, markers[CB_POSITION_FIGHTING_SWORDS], "atlas/swords");
-  if(!swordsRes.first)
-  {
-    return;
-  }
-  
-  swordAmount = Store::swordsMap[std::format("{}{}", swordsRes.second.x, swordsRes.second.y)];
-
-  if(currentRoutine == CB_ROUTINE_FARM && swordAmount < config->swordsThreshold && currentAction == CB_ACTION_REFRESH_SWORDS)
+  if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
-    Emulator::click(instance, markers[CB_POSITION_FIGHTING_SWORDS]);
-    waitFor(3000, 100);
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
+    waitFor(1000, 100);
   }
   // END SWORDS ACTIONS
 
@@ -220,8 +203,9 @@ void Bot::handleFighting()
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS)
   {
+    Marker &buffLoc = markers["buff_" + config->selectedPortal];
     // Check if there is buff applied to reapply
-    if(config->buffs && Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_BUFF_DEKDUN]))
+    if(config->buffs && Emulator::compareImages(instance, buffLoc))
     {
       currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
     }
@@ -313,7 +297,7 @@ void Bot::handleInventory()
           cv::Mat needle = cv::imread("data/images/items/" + buff + ".png");
           cv::Mat haysteack = Emulator::printscreen(instance, marker.x, marker.y, marker.width, marker.height);
 
-          res = Emulator::find(haysteack, needle, 0.95);
+          res = Emulator::find(haysteack, needle, 0.90);
 
           // The item was found
           if(res.first)
@@ -336,7 +320,6 @@ void Bot::handleInventory()
         config->buffs = false;
       }
     }
-
     
     if(currentAction == CB_ACTION_REFRESH_BUFFS_RETURN)
     {
@@ -390,7 +373,9 @@ void Bot::handleLogin()
 void Bot::handleHome()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_HOME_HOME];
-  bool shoudlRefill = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION]);
+  bool potion29 = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION_29]);
+  bool potion89 = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION_89]);
+  bool shoudlRefill = potion29 || potion89;
 
   if(currentRoutine == CB_ROUTINE_FARM && !shoudlRefill)
   {
@@ -412,25 +397,50 @@ void Bot::handleHome()
 
 void Bot::handleRefill()
 {
-  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_REFILL_REFILL];
+  std::unordered_map<std::string, Marker> &markers = Store::markers[location];
 
-  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]))
+  if(location == CB_LOCATION_REFILL_REFILL)
   {
-    Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]);
-    waitFor(300, 100);
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]);
+      waitFor(300, 100);
+    }
+
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]);
+      waitFor(1500, 100);
+    }
+
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]))
+    {
+      currentAction = CB_ACTION_REFRESH_SWORDS;
+      Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_CLOSE_BTN]);
+      waitFor(300, 100);
+    }
   }
 
-  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]))
+  if(location == CB_LOCATION_REFILL_PREMIUM_REFILL_PREMIUM)
   {
-    Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]);
-    waitFor(1500, 100);
-  }
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_ACTIVE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_ACTIVE]);
+      waitFor(300, 100);
+    }
 
-  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]))
-  {
-    currentAction = CB_ACTION_REFRESH_SWORDS;
-    Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]);
-    waitFor(300, 100);
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_BTN_ACTIVE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_BTN_ACTIVE]);
+      waitFor(1500, 100);
+    }
+
+    if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_INACTIVE]))
+    {
+      currentAction = CB_ACTION_REFRESH_SWORDS;
+      Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_CLOSE_BTN]);
+      waitFor(300, 100);
+    }
   }
 }
 
@@ -468,6 +478,19 @@ void Bot::handleQuestReward()
   }
 }
 
+void Bot::handleAborQuest()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ABORT_QUEST_ABORT_QUEST];
+
+  if(currentRoutine == CB_ROUTINE_FARM)
+  {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_ABORT_QUEST_NO_BTN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_ABORT_QUEST_NO_BTN]);
+      waitFor(500, 100);
+    }
+  }
+}
 
 void Bot::handleQuests()
 {
@@ -489,7 +512,7 @@ void Bot::handleQuests()
       if(res)
       {
         Emulator::click(instance, markers[quest]);
-        waitFor(1500, 100);
+        waitFor(2500, 100);
         break;
       }
     }

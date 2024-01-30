@@ -41,7 +41,6 @@ with open(generated_file, "w") as file:
   file.write('// ROUTINE MACROS\n')
   file.write('#define CB_ROUTINE_NONE "none"\n')
   file.write('#define CB_ROUTINE_FARM "farm"\n')
-  file.write('#define CB_ROUTINE_COMBINE "combine"\n')
   file.write('#define CB_LOCATION_UNKNOWN "unknown"\n')
 
   file.write('\n')

@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"refill_premium","location":"refill_premium","x":130,"y":202,"width":30,"height":9},
+  "markers": [
+    {"name":"max_btn_active","location":"refill_premium","x":237,"y":281,"width":30,"height":9},
+    {"name":"max_btn_inactive","location":"refill_premium","x":237,"y":281,"width":30,"height":9},
+    {"name":"refill_btn_active","location":"refill_premium","x":150,"y":441,"width":46,"height":15},
+    {"name":"refill_close_btn","location":"refill_premium","x":279,"y":104,"width":17,"height":15}
+  ]
+}

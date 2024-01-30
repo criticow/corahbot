@@ -80,8 +80,8 @@ struct Summary
   std::string routine = "unknown";
   std::string location = "unknown";
   std::string nextAction = "unknown";
-  std::string swords = "unknown";
-  std::string potions = "unknown";
+  std::string refreshSwords = "false";
+  std::string refreshPotions = "false";
   std::string crashs = "0";
   std::string questsDone = "0";
 };
@@ -103,12 +103,8 @@ class Store
   static std::vector<Selectable> foods;
   static std::vector<Selectable> potions;
   static std::vector<Selectable> scrolls;
-  static std::vector<Selectable> chips;
 
   static std::vector<std::string> refreshModes;
-
-  static std::unordered_map<std::string, int> swordsMap;
-  static std::unordered_map<std::string, int> potionsMap;
 
   static void loadMarkers();
 

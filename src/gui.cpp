@@ -234,67 +234,11 @@ void GUI::buffsUI(const std::string &instance)
     }
 
     ImGui::Spacing();
-
     ImGui::Columns(2, "BuffsColumns", false);
-
-    ImGui::SeparatorText("Foods");
-    for(auto &food : Store::foods)
-    {
-      std::vector<std::string>::iterator it = std::find(config.selectedBuffs.begin(), config.selectedBuffs.end(), food.name);
-      bool isSelected = it != config.selectedBuffs.end();
-      size_t index;
-      std::string name = food.displayName;
-
-      if(isSelected)
-      {
-        index = std::distance(config.selectedBuffs.begin(), it);
-        name = std::to_string(index + 1) + " - " + name;
-      }
-
-      if(ImGui::Selectable(name.c_str(), isSelected))
-      {
-        // Already exists in the list of selected buffs
-        if(isSelected)
-        {
-          config.selectedBuffs.erase(std::remove(config.selectedBuffs.begin(), config.selectedBuffs.end(), food.name), config.selectedBuffs.end());
-          continue;
-        }
-
-        config.selectedBuffs.push_back(food.name);
-      }
-    }
-
+    selectableList(instance, "Foods", Store::foods, config.selectedBuffs);
     ImGui::NextColumn();
-
-    ImGui::SeparatorText("Potions");
-    for(auto &potion : Store::potions)
-    {
-      std::vector<std::string>::iterator it = std::find(config.selectedBuffs.begin(), config.selectedBuffs.end(), potion.name);
-      bool isSelected = it != config.selectedBuffs.end();
-      size_t index;
-      std::string name = potion.displayName;
-
-      if(isSelected)
-      {
-        index = std::distance(config.selectedBuffs.begin(), it);
-        name = std::to_string(index + 1) + " - " + name;
-      }
-
-      if(ImGui::Selectable(name.c_str(), isSelected))
-      {
-        // Already exists in the list of selected buffs
-        if(isSelected)
-        {
-          config.selectedBuffs.erase(std::remove(config.selectedBuffs.begin(), config.selectedBuffs.end(), potion.name), config.selectedBuffs.end());
-          continue;
-        }
-
-        config.selectedBuffs.push_back(potion.name);
-      }
-    }
-
+    selectableList(instance, "Potions", Store::potions, config.selectedBuffs);
     ImGui::Columns(1);
-
     ImGui::EndTabItem();
   }
 }
@@ -313,35 +257,8 @@ void GUI::questsUI(const std::string & instance)
     }
 
     ImGui::Spacing();
-
-    ImGui::Columns(2, "BuffsColumns", false);
-
-    ImGui::SeparatorText("Scrolls");
-    for(auto &scroll : Store::scrolls)
-    {
-      std::vector<std::string>::iterator it = std::find(config.selectedQuests.begin(), config.selectedQuests.end(), scroll.name);
-      bool isSelected = it != config.selectedQuests.end();
-      size_t index;
-      std::string name = scroll.displayName;
-
-      if(isSelected)
-      {
-        index = std::distance(config.selectedQuests.begin(), it);
-        name = std::to_string(index + 1) + " - " + name;
-      }
-
-      if(ImGui::Selectable(name.c_str(), isSelected))
-      {
-        // Already exists in the list of selected buffs
-        if(isSelected)
-        {
-          config.selectedQuests.erase(std::remove(config.selectedQuests.begin(), config.selectedQuests.end(), scroll.name), config.selectedQuests.end());
-          continue;
-        }
-
-        config.selectedQuests.push_back(scroll.name);
-      }
-    }
+    ImGui::Columns(2, "QuestsColumns", false);
+    selectableList(instance, "Scrolls", Store::scrolls, config.selectedQuests);
     ImGui::Columns(1);
     ImGui::EndTabItem();
   }
@@ -387,29 +304,23 @@ void GUI::actionsUI(const std::string &instance)
 {
   ImGui::SeparatorText("Actions");
   InstanceState &state = Store::states[instance];
-  ImGui::BeginDisabled(state.working.load());
-  if(ImGui::Button(ICON_FA_PLAY) || Application::input.pressed(ACTION_ACCEPT))
+  if(ImGui::Button(state.working.load() ? ICON_FA_STOP : ICON_FA_PLAY) || Application::input.pressed(KEY_F1))
   {
-    util::saveConfig(instance, Store::configs[instance]);
-    state.working.store(true);
-    std::thread(botThread, std::ref(instance)).detach();
-  }
-  ImGui::EndDisabled();
+    if(!state.working.load())
+    {
+      util::saveConfig(instance, Store::configs[instance]);
+      state.working.store(true);
+      std::thread(botThread, std::ref(instance)).detach();
+      return;
+    }
 
-  ImGui::SameLine();
-  ImGui::BeginDisabled(!state.working.load());
-  if(ImGui::Button(ICON_FA_STOP))
-  {
     state.working.store(false);
   }
-  ImGui::EndDisabled();
-
   ImGui::Spacing();
 }
 
 void GUI::summaryUI(const std::string &instance)
 {
-  #ifndef NDEBUG
   if(ImGui::BeginTabItem("Summary"))
   {
     if(!Store::states[instance].working.load())
@@ -442,8 +353,8 @@ void GUI::summaryUI(const std::string &instance)
     ImGui::Text(("Routine: " + summary.routine).c_str());
     ImGui::Text(("Location: " + summary.location).c_str());
     ImGui::Text(("Next Action: " + summary.nextAction).c_str());
-    ImGui::Text(("Swords: " + summary.swords).c_str());
-    ImGui::Text(("Potions: " + summary.potions).c_str());
+    ImGui::Text(("Refresh Swords: " + summary.refreshSwords).c_str());
+    ImGui::Text(("Refresh Potions: " + summary.refreshPotions).c_str());
     ImGui::Text(("Crashs: " + summary.crashs).c_str());
     ImGui::Text(("Quests Done: " + summary.questsDone).c_str());
 
@@ -451,7 +362,36 @@ void GUI::summaryUI(const std::string &instance)
 
     ImGui::EndTabItem();
   }
-  #endif
+}
+
+void GUI::selectableList(const std::string &instance, const std::string &name, std::vector<Selectable> &selectableList, std::vector<std::string> &selectedItems)
+{
+  ImGui::SeparatorText("Chips");
+  for(auto &item : selectableList)
+  {
+    std::vector<std::string>::iterator it = std::find(selectedItems.begin(), selectedItems.end(), item.name);
+    bool isSelected = it != selectedItems.end();
+    size_t index;
+    std::string name = item.displayName;
+
+    if(isSelected)
+    {
+      index = std::distance(selectedItems.begin(), it);
+      name = std::to_string(index + 1) + " - " + name;
+    }
+
+    if(ImGui::Selectable(name.c_str(), isSelected))
+    {
+      // Already exists in the list of selected buffs
+      if(isSelected)
+      {
+        selectedItems.erase(std::remove(selectedItems.begin(), selectedItems.end(), item.name), selectedItems.end());
+        continue;
+      }
+
+      selectedItems.push_back(item.name);
+    }
+  }
 }
 
 void GUI::loadFonts()
