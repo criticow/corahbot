@@ -24,6 +24,7 @@
     {"name":"garzon","location":"map","x":130,"y":321,"width":16,"height":16},
     {"name":"pro_giant","location":"map","x":130,"y":239,"width":16,"height":16},
     {"name":"iceroost","location":"map","x":102,"y":50,"width":50,"height":10},
-    {"name":"rinch","location":"map","x":129,"y":410,"width":16,"height":16}
+    {"name":"rinch","location":"map","x":129,"y":410,"width":16,"height":16},
+    {"name":"frost_serpent","location":"map","x":125,"y":318,"width":16,"height":16}
   ]
 }

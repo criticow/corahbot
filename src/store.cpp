@@ -78,7 +78,8 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
   {
     CB_POSITION_MAP_ICEROOST,
     {
-      { CB_POSITION_MAP_RINCH, "Rinch (Lv.120)"}
+      { CB_POSITION_MAP_RINCH, "Rinch (Lv.120)"},
+      { CB_POSITION_MAP_FROST_SERPENT, "Frost Serpent (Lv.150)"}
     }
   }
 };
