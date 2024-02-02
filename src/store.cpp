@@ -72,7 +72,8 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
     {
       { CB_POSITION_MAP_BALOR, "Balor (Lv.115)"},
       { CB_POSITION_MAP_GARZON, "Garzon (Lv.130)"},
-      { CB_POSITION_MAP_PRO_GIANT, "Pro Giant (Lv.150)"}
+      { CB_POSITION_MAP_PRO_GIANT, "Pro Giant (Lv.150)"},
+      { CB_POSITION_MAP_DEVIL_GIANT, "Devil Giant (Lv.190)"}
     }
   },
   {

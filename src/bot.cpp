@@ -382,7 +382,7 @@ void Bot::handleHome()
     if(Emulator::compareImages(instance, markers[CB_POSITION_HOME_REFILL_BTN]))
     {
       Emulator::click(instance, markers[CB_POSITION_HOME_REFILL_BTN]);
-      waitFor(500, 100);
+      waitFor(1000, 100);
     }
 
     return;
@@ -391,7 +391,7 @@ void Bot::handleHome()
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_HOME_START_BTN]))
   {
     Emulator::click(instance, markers[CB_POSITION_HOME_START_BTN]);
-    waitFor(500, 100);
+    waitFor(1500, 100);
   }
 }
 
@@ -404,7 +404,7 @@ void Bot::handleRefill()
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]))
     {
       Emulator::click(instance, markers[CB_POSITION_REFILL_MAX_BTN_ACTIVE]);
-      waitFor(300, 100);
+      waitFor(500, 100);
     }
 
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_REFILL_BTN_ACTIVE]))
@@ -417,7 +417,7 @@ void Bot::handleRefill()
     {
       currentAction = CB_ACTION_REFRESH_SWORDS;
       Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_CLOSE_BTN]);
-      waitFor(300, 100);
+      waitFor(500, 100);
     }
   }
 
@@ -426,7 +426,7 @@ void Bot::handleRefill()
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_ACTIVE]))
     {
       Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_ACTIVE]);
-      waitFor(300, 100);
+      waitFor(500, 100);
     }
 
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_BTN_ACTIVE]))
@@ -439,7 +439,7 @@ void Bot::handleRefill()
     {
       currentAction = CB_ACTION_REFRESH_SWORDS;
       Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_CLOSE_BTN]);
-      waitFor(300, 100);
+      waitFor(500, 100);
     }
   }
 }
