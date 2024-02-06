@@ -61,7 +61,6 @@ void Application::appLoop()
   {
     this->update();
     this->window.clear();
-    this->gui.update();
     this->gui.render();
     this->render();
     this->window.swapBuffers();

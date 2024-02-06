@@ -39,7 +39,7 @@ void Emulator::arrange()
   int width = 384;
   int height = 642;
   int counter = 0;
-  int cols = 5;
+  int cols = 6;
 
   for(auto &instance : instances)
   {
@@ -53,7 +53,8 @@ void Emulator::arrange()
       }
 
       int xPos = x + (width * counter);
-      SetWindowPos(hwnd, NULL, xPos, y, width, height, SWP_NOZORDER);
+      // SetWindowPos(hwnd, NULL, xPos, y, width, height, SWP_NOZORDER);
+      SetWindowPos(hwnd, HWND_TOP, xPos, y, width, height, SWP_NOZORDER); // Brings window to top
       counter++;
     }
   }
@@ -98,6 +99,16 @@ void Emulator::launch(int index)
 void Emulator::quit(const std::string &windowTitle)
 {
   std::string res = util::parseCMD(console, {"quit", "-name:" + windowTitle});
+
+  if(!res.empty())
+  {
+    LOGGER_DEBUG(res);
+  }
+}
+
+void Emulator::reboot(const std::string &windowTitle)
+{
+  std::string res = util::parseCMD(console, {"reboot", "-name:" + windowTitle});
 
   if(!res.empty())
   {

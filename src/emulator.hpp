@@ -24,6 +24,7 @@ class Emulator
   static void killappall(const std::string &windowTitle);
   static void killapp(const std::string &windowTitle, const std::string &packageName);
   static void quit(const std::string &windowTitle);
+  static void reboot(const std::string &windowTitle);
   static void click(const std::string &windowTitle, glm::ivec2 point);
   static void click(const std::string &windowTitle, glm::ivec4 point);
   static void click(const std::string &windowTitle, Marker &marker);

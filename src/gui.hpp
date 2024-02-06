@@ -16,7 +16,6 @@ class GUI : public BaseGUI
   GUI() : BaseGUI(){};
   virtual void renderUI() override;
   void cleanup();
-  void update();
   void init();
 
   private:

@@ -45,9 +45,7 @@ struct Marker
 
 struct InstanceState
 {
-  std::atomic<bool> open = true;
   std::atomic<bool> working = false;
-  std::atomic<bool> minimized = false;
 
   // Default constructor
   InstanceState() = default;
@@ -55,15 +53,13 @@ struct InstanceState
   // Custom copy assignment operator
   InstanceState& operator=(const InstanceState& other) {
     if (this != &other) {
-      open.store(other.open.load());
       working.store(other.working.load());
-      minimized.store(other.minimized.load());
     }
     return *this;
   }
 
   // Custom constructor
-  InstanceState(bool open, bool working, bool minimized) : open(open), working(working), minimized(minimized) {}
+  InstanceState(bool working) : working(working) {}
 };
 
 struct Selectable

@@ -23,14 +23,34 @@ void Bot::run(const std::string &instance)
 
   while(true)
   {
+    HWND hwnd = FindWindow(nullptr, instance.c_str());
+
+    // Window not found, instance is closed
+    if(!hwnd)
+    {
+      continue;
+    }
+
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+
+    // Window is minimized, cant send message events
+    if(width == 0 || height == 0)
+    {
+      continue;
+    }
+
     std::mutex &instanceMutex = Store::mutexes[instance];
 
     auto start = std::chrono::high_resolution_clock::now();
 
     InstanceState &state = Store::states[instance];
 
-    // Check if the bot is working, window is open and not minimized
-    if(!state.working.load() || !state.open.load() || state.minimized.load())
+    // Check if the bot is working
+    if(!state.working.load())
     {
       state.working.store(false);
       break;
@@ -102,6 +122,12 @@ void Bot::run(const std::string &instance)
     }
 
     if(location == CB_LOCATION_APP_CRASHED_APP_CRASHED)
+    {
+      Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
+      waitFor(500, 100);
+    }
+
+    if(location == CB_LOCATION_SYSTEM_STOPPED_SYSTEM_STOPPED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
       waitFor(500, 100);
@@ -198,7 +224,7 @@ void Bot::handleFighting()
   if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
-    waitFor(500, 100);
+    waitFor(1000, 100);
   }
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS)

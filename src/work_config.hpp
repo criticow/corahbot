@@ -13,6 +13,7 @@ class WorkConfig
   bool farm = false;;
   bool buffs = false;
   bool quests = false;
+  bool reboot = false;
   int refreshMode = 0;
   std::string selectedPortal = CB_POSITION_MAP_RANHAIN;
   int selectedMonster = 0;

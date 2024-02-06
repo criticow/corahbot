@@ -9,6 +9,7 @@
     {"name":"book","location":"fighting","x":39,"y":358,"width":20,"height":18},
     {"name":"buff_ranhain","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_dekdun","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"buff_iceroost","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_vulcardi","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
     {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10}

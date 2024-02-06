@@ -131,15 +131,6 @@ void GUI::farmUI(const std::string &instance)
 
     std::vector<Monster> &monsterList = monsters[config.selectedPortal];
     
-    ImGui::SetNextItemWidth(35);
-    ImGui::InputInt("Swords Threshold", &config.swordsThreshold, 0, 50);
-    config.swordsThreshold = std::clamp(config.swordsThreshold, 0, 50);
-
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(35);
-    ImGui::InputInt("Potions Threshold", &config.potionsThreshold, 0, 29);
-    config.potionsThreshold = std::clamp(config.potionsThreshold, 0, 29);
-
     ImGui::Columns(2, "FarmColumns", false);
     // LEFT COLUMN
 
@@ -269,33 +260,13 @@ void GUI::statesUI(const std::string &instance)
   ImGui::SeparatorText("State");
   InstanceState &state = Store::states[instance];
 
-  if(state.open.load())
-  {
-    RoundedTag("Window Open", green, black, green);
-  }
-  if(!state.open.load())
-  {
-    RoundedTag("Window Closed", red, white, red);
-  }
   if(state.working.load())
   {
-    ImGui::SameLine();
     RoundedTag("Bot Working", green, black, green);
   }
   if(!state.working.load())
   {
-    ImGui::SameLine();
     RoundedTag("Bot Stopped", red, white, red);
-  }
-  if(!state.minimized.load())
-  {
-    ImGui::SameLine();
-    RoundedTag("Window Acessible", green, black, green);
-  }
-  if(state.minimized.load())
-  {
-    ImGui::SameLine();
-    RoundedTag("Window Minimized", red, white, red);
   }
   ImGui::Spacing();
 }
@@ -415,66 +386,10 @@ void GUI::cleanup()
   for(auto &instance : instances)
   {
     InstanceState &state = Store::states[instance];
-    state.open.store(false);
     state.working.store(false);
-    state.minimized.store(true);
   }
 
   cv::destroyAllWindows();
-}
-
-void GUI::update()
-{
-
-  // if(this->tempo.hasPassed("InstancesUpdate", 500))
-  // {
-  //   std::vector<std::string> instanceNames = Emulator::list();
-
-  //   for(auto &instance : instanceNames)
-  //   {
-  //     // Insert the new item on the list only if does not already exists
-  //     if(std::find(this->instances.begin(), this->instances.end(), instance) == this->instances.end())
-  //     {
-  //       this->instances.push_back(instance);
-  //       Store::states[instance] = InstanceState{true, false, false};
-  //       Store::configs[instance] = WorkConfig{};
-  //       Store::summaries[instance] = Summary{};
-  //     }
-  //   }
-  // }
-
-  // Update the instance states, check if the window is closed or minimized
-  for(auto &instance : this->instances)
-  {
-    HWND hwnd = FindWindow(nullptr, instance.c_str());
-    InstanceState &state = Store::states[instance];
-
-    // Window not found, instance is closed
-    if(!hwnd)
-    {
-      state.open.store(false);
-      state.working.store(false);
-      continue;
-    }
-
-    state.open.store(true);
-
-    RECT rect;
-    GetClientRect(hwnd, &rect);
-
-    int width = rect.right - rect.left;
-    int height = rect.bottom - rect.top;
-
-    // Window is minimized, cant send message events
-    if(width == 0 || height == 0)
-    {
-      state.minimized.store(true);
-      state.working.store(false);
-      continue;
-    }
-
-    state.minimized.store(false);
-  }
 }
 
 void GUI::init()
@@ -489,7 +404,7 @@ void GUI::init()
   // Initialize the instance states
   for(auto &instance : this->instances)
   {
-    Store::states[instance] = InstanceState{true, false, false};
+    Store::states[instance] = InstanceState{false};
     Store::configs[instance] = util::getConfig(instance);
     Store::summaries[instance] = Summary{};
   }
