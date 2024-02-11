@@ -18,6 +18,13 @@ void Bot::run(const std::string &instance)
   currentRoutine = CB_ROUTINE_NONE;
   currentAction = CB_ROUTINE_NONE;
 
+  // Between 45 and 50 min reset
+  int expectedRebootTime = 1000 * 60 * Random::choose(120, 125);
+  if(config->reboot)
+  {
+    LOGGER_DEBUG("Instance {} will reboot in {}ms", instance, expectedRebootTime);
+  }
+
   if(config->farm)
     currentRoutine = CB_ROUTINE_FARM;
 
@@ -41,6 +48,22 @@ void Bot::run(const std::string &instance)
     if(width == 0 || height == 0)
     {
       continue;
+    }
+
+    if(config->reboot)
+    {
+      // 45 min reset
+      // Check if the expected time to reboot has passed
+
+      if(tempo.hasPassed("reboot_" + instance, expectedRebootTime))
+      {
+        glm::ivec2 position = Emulator::getPosition(instance);
+        Emulator::reboot(instance);
+        // Wait for 30 sec after rebooting to start running again
+        waitFor(1000 * 30);
+        Emulator::setPosition(instance, position);
+        tempo.clearTimepoint("reboot_" + instance);
+      }
     }
 
     std::mutex &instanceMutex = Store::mutexes[instance];
@@ -190,6 +213,12 @@ void Bot::handleFighting()
 
   refreshPotions = potion0 || potion1;
 
+  // Bot is stuck at the swords
+  if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD_STUCK]))
+  {
+    refreshPotions = true;
+  }
+
   if(currentRoutine == CB_ROUTINE_FARM && !refreshPotions && currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
@@ -201,6 +230,7 @@ void Bot::handleFighting()
     currentAction = CB_ACTION_REFRESH_POTIONS;
     if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
     {
+      waitFor(1000, 100);
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
       waitFor(1500, 100);
     }
@@ -216,6 +246,7 @@ void Bot::handleFighting()
   if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
+    waitFor(500, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
     waitFor(1000, 100);
   }
@@ -223,6 +254,7 @@ void Bot::handleFighting()
 
   if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
+    waitFor(1000, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
     waitFor(1000, 100);
   }
@@ -329,7 +361,7 @@ void Bot::handleInventory()
           if(res.first)
           {
             Emulator::click(instance, {marker.x + res.second.x, marker.y + res.second.y, res.second.z, res.second.w});
-            waitFor(500, 100);
+            waitFor(1500, 100);
             break;
           }
         }
@@ -353,7 +385,7 @@ void Bot::handleInventory()
       {
         currentAction = CB_ACTION_REFRESH_SWORDS;
         Emulator::click(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]);
-        waitFor(500, 100);
+        waitFor(1500, 100);
       }
     }
   }
@@ -476,6 +508,7 @@ void Bot::handleMap()
 
   Monster &monster = Store::monsters[config->selectedPortal][config->selectedMonster];
 
+
   // Check if it is not in the correct portal, to change location
   if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config->selectedPortal]))
   {
@@ -485,7 +518,19 @@ void Bot::handleMap()
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[monster.name]))
   {
     Emulator::click(instance, markers[monster.name]);
-    waitFor(3000, 100);
+    waitFor(1500, 100);
+  }
+
+  // Close the map if it should not go the the fighting scene
+  if(currentAction == CB_ACTION_REFRESH_POTIONS || Emulator::compareImages(instance, markers[CB_LOCATION_MAP_MAP]))
+  {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    // Click on the close button
+    if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_CLOSE_BTN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_MAP_CLOSE_BTN]);
+      waitFor(1000, 100);
+    }
   }
 }
 

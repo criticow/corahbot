@@ -24,6 +24,7 @@ class Bot
   std::string location = CB_LOCATION_UNKNOWN;
   bool refreshSwords = false;
   bool refreshPotions = false;
+  std::unordered_map<std::string, cv::Mat> snapshots;
 
   void findLocation(const std::string &instance);
 

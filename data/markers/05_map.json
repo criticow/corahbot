@@ -2,6 +2,8 @@
   "version": "0.0.1",
   "identifier": {"name":"map","location":"map","x":56,"y":53,"width":23,"height":14},
   "markers": [
+    {"name":"close_btn","location":"map","x":284,"y":53,"width":25,"height":11},
+
     {"name":"ranhain","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"bear","location":"map","x":129,"y":411,"width":16,"height":16},
     {"name":"giant_ant","location":"map","x":198,"y":411,"width":16,"height":16},
@@ -11,6 +13,7 @@
     {"name":"scavanger","location":"map","x":129,"y":236,"width":16,"height":16},
     {"name":"amphnaly","location":"map","x":199,"y":236,"width":16,"height":16},
     {"name":"goblin_chief","location":"map","x":199,"y":145,"width":16,"height":16},
+
     {"name":"dekdun","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"thia","location":"map","x":197,"y":143,"width":16,"height":16},
     {"name":"skeleton_worker","location":"map","x":130,"y":410,"width":16,"height":16},
@@ -19,14 +22,43 @@
     {"name":"skeleton_wizard","location":"map","x":61,"y":235,"width":16,"height":16},
     {"name":"skeleton_thief","location":"map","x":197,"y":236,"width":16,"height":16},
     {"name":"skeleton_king","location":"map","x":267,"y":148,"width":16,"height":16},
+
     {"name":"vulcardi","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"balor","location":"map","x":129,"y":410,"width":16,"height":16},
     {"name":"garzon","location":"map","x":130,"y":321,"width":16,"height":16},
     {"name":"pro_giant","location":"map","x":130,"y":239,"width":16,"height":16},
     {"name":"jargol","location":"map","x":199,"y":237,"width":16,"height":16},
     {"name":"devil_giant","location":"map","x":198,"y":147,"width":16,"height":16},
+    {"name":"grem","location":"map","x":59,"y":231,"width":16,"height":16},
+    {"name":"razath","location":"map","x":269,"y":142,"width":16,"height":16},
+
     {"name":"iceroost","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"rinch","location":"map","x":129,"y":410,"width":16,"height":16},
-    {"name":"frost_serpent","location":"map","x":125,"y":318,"width":16,"height":16}
+    {"name":"frost_serpent","location":"map","x":125,"y":318,"width":16,"height":16},
+    {"name":"punch","location":"map","x":195,"y":406,"width":16,"height":16},
+    {"name":"pitcher","location":"map","x":56,"y":317,"width":16,"height":16},
+    {"name":"shock_punch","location":"map","x":127,"y":232,"width":16,"height":16},
+    {"name":"descon_pitcher","location":"map","x":200,"y":230,"width":16,"height":16},
+    {"name":"dread_knight","location":"map","x":128,"y":142,"width":16,"height":16},
+    {"name":"ark_jakal","location":"map","x":59,"y":140,"width":16,"height":16},
+
+    {"name":"airos","location":"map","x":102,"y":50,"width":50,"height":10},
+    {"name":"sky_dragon","location":"map","x":129,"y":404,"width":16,"height":16},
+    {"name":"fire_dragon","location":"map","x":196,"y":404,"width":16,"height":16},
+    {"name":"flying_devil","location":"map","x":266,"y":404,"width":16,"height":16},
+    {"name":"earth_dragon","location":"map","x":130,"y":315,"width":16,"height":16},
+    {"name":"vhagan","location":"map","x":57,"y":313,"width":16,"height":16},
+    {"name":"iron_drake","location":"map","x":128,"y":230,"width":16,"height":16},
+    {"name":"ancient_dragon","location":"map","x":129,"y":134,"width":16,"height":16},
+    {"name":"sulfaros","location":"map","x":56,"y":137,"width":16,"height":16},
+
+    {"name":"forilon","location":"map","x":102,"y":50,"width":50,"height":10},
+    {"name":"sinister_shadow","location":"map","x":130,"y":405,"width":16,"height":16},
+    {"name":"ontoryxx","location":"map","x":130,"y":316,"width":16,"height":16},
+    {"name":"soil_serpent","location":"map","x":130,"y":226,"width":16,"height":16},
+    {"name":"aeropaloid","location":"map","x":60,"y":226,"width":16,"height":16},
+    {"name":"minod","location":"map","x":200,"y":226,"width":16,"height":16},
+    {"name":"styro","location":"map","x":200,"y":136,"width":16,"height":16},
+    {"name":"sauron","location":"map","x":269,"y":136,"width":16,"height":16}
   ]
 }

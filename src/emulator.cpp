@@ -3,6 +3,9 @@
 
 std::string console = "C:/Nox/bin/NoxConsole.exe";
 
+const int EMULATOR_WIDTH = 384;
+const int EMULATOR_HEIGHT = 642;
+
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
   if (IsWindowVisible(hWnd)) {
     char title[256];
@@ -29,37 +32,53 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
   return TRUE;
 }
 
-void Emulator::arrange()
+void Emulator::arrange(int cols)
 {
   std::vector<std::string> instances = Emulator::list();
   std::sort(instances.begin(), instances.end());
 
-  int x = -200;
+  int x = -210;
   int y = -1080;
-  int width = 384;
-  int height = 642;
   int counter = 0;
-  int cols = 6;
 
   for(auto &instance : instances)
   {
-    HWND hwnd = FindWindow(nullptr, instance.c_str());
-    if(hwnd)
+    if(counter == cols)
     {
-      if(counter == cols)
-      {
-        counter = 0;
-        y += 380;
-      }
-
-      int xPos = x + (width * counter);
-      // SetWindowPos(hwnd, NULL, xPos, y, width, height, SWP_NOZORDER);
-      SetWindowPos(hwnd, HWND_TOP, xPos, y, width, height, SWP_NOZORDER); // Brings window to top
-      counter++;
+      counter = 0;
+      y += 380;
     }
+
+    int xPos = x + (EMULATOR_WIDTH * counter);
+    setPosition(instance, {xPos, y});
+    counter++;
   }
 }
 
+glm::ivec2 Emulator::getPosition(const std::string &windowTitle)
+{
+  glm::ivec2 position(0);
+  HWND hwnd = FindWindow(nullptr, windowTitle.c_str());
+  if(!hwnd)
+    return position;
+  
+  RECT windowRect;
+  GetWindowRect(hwnd, &windowRect);
+
+  position.x = windowRect.left;
+  position.y = windowRect.top;
+
+  return position;
+}
+
+void Emulator::setPosition(const std::string &windowTitle, glm::ivec2 position)
+{
+  HWND hwnd = FindWindow(nullptr, windowTitle.c_str());
+  if(hwnd)
+  {
+    SetWindowPos(hwnd, HWND_TOP, position.x, position.y, EMULATOR_WIDTH, EMULATOR_HEIGHT, SWP_NOZORDER); // Brings window to top
+  }
+}
 
 // std::vector<std::string> Emulator::listInstances()
 // {
@@ -347,40 +366,3 @@ cv::Mat Emulator::printscreen(const std::string &windowTitle, Marker &marker)
 {
   return printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
 }
-
-// std::string Emulator::textFromImage(const std::string &windowTitle, Marker &marker)
-// {
-//   std::string text;
-
-//   cv::Mat image = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
-
-//   // Convert cv::Mat to RGB format (STB Image uses RGB)
-//   cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-
-//   // Get image dimensions
-//   int width = image.cols;
-//   int height = image.rows;
-//   int channels = image.channels();
-
-//   // Read the image using stb_image
-//   unsigned char* imageData = image.data;
-  
-//   // Set the image for OCR
-//   tess.SetImage(imageData, width, height, channels, channels * width);
-
-//   // Perform OCR and get the result
-//   char* outText = tess.GetUTF8Text();
-
-//   text = outText;
-
-//   // Release resources
-//   delete[] outText;
-
-//   return text;
-// }
-
-// void Emulator::initTess()
-// {
-//   ASSERT(!tess.Init("data/tess", "eng", tesseract::OEM_DEFAULT), "Error initializing tesseract");
-//   tess.SetVariable("tessedit_char_whitelist", "0123456789");
-// }

@@ -33,7 +33,9 @@ std::unordered_map<std::string, std::string> Store::portals{
   { CB_POSITION_MAP_RANHAIN, "Ranhain"},
   { CB_POSITION_MAP_DEKDUN, "Dekdun"},
   { CB_POSITION_MAP_VULCARDI, "Vulcardi"},
-  { CB_POSITION_MAP_ICEROOST, "Iceroost"}
+  { CB_POSITION_MAP_ICEROOST, "Iceroost"},
+  { CB_POSITION_MAP_FORILON, "Forilon"},
+  { CB_POSITION_MAP_AIROS, "Airos"}
   // "Forilon",
   // "Airos",
   // "Mitron"
@@ -74,14 +76,47 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
       { CB_POSITION_MAP_GARZON, "Garzon (Lv.130)"},
       { CB_POSITION_MAP_PRO_GIANT, "Pro Giant (Lv.150)"},
       { CB_POSITION_MAP_JARGOL, "Jargol (Lv.170)"},
-      { CB_POSITION_MAP_DEVIL_GIANT, "Devil Giant (Lv.190)"}
+      { CB_POSITION_MAP_GREM, "Grem (Lv.155)"},
+      { CB_POSITION_MAP_DEVIL_GIANT, "Devil Giant (Lv.190)"},
+      { CB_POSITION_MAP_RAZATH, "Razath (Lv.200)"},
     }
   },
   {
     CB_POSITION_MAP_ICEROOST,
     {
       { CB_POSITION_MAP_RINCH, "Rinch (Lv.120)"},
-      { CB_POSITION_MAP_FROST_SERPENT, "Frost Serpent (Lv.150)"}
+      { CB_POSITION_MAP_PUNCH, "Punch (Lv.135)"},
+      { CB_POSITION_MAP_FROST_SERPENT, "Frost Serpent (Lv.150)"},
+      { CB_POSITION_MAP_PITCHER, "Pitcher (Lv.160)"},
+      { CB_POSITION_MAP_SHOCK_PUNCH, "Shock Punch (Lv.165)"},
+      { CB_POSITION_MAP_DESCON_PITCHER, "Descon Pitcher (Lv.180)"},
+      { CB_POSITION_MAP_DREAD_KNIGHT, "Dread Knight (Lv.195)"},
+      { CB_POSITION_MAP_ARK_JAKAL, "Ark Jakal (Lv.205)"},
+    }
+  },
+  {
+    CB_POSITION_MAP_FORILON,
+    {
+      {CB_POSITION_MAP_SINISTER_SHADOW, "Sinister Shadow (Lv.150)"},
+      {CB_POSITION_MAP_ONTORYXX, "Ontoryxx (Lv.175)"},
+      {CB_POSITION_MAP_SOIL_SERPENT, "Soil Serpent (Lv.200)"},
+      {CB_POSITION_MAP_AEROPALOID, "Aeropaloid (Lv.210)"},
+      {CB_POSITION_MAP_MINOD, "Minod (Lv.225)"},
+      {CB_POSITION_MAP_STYRO, "Styro (Lv.250)"},
+      {CB_POSITION_MAP_SAURON, "Sauron (Lv.275)"},
+    }
+  },
+  {
+    CB_POSITION_MAP_AIROS,
+    {
+      {CB_POSITION_MAP_SKY_DRAGON, "Sky Dragon (Lv.200)"},
+      {CB_POSITION_MAP_FIRE_DRAGON, "Fire Dragon (Lv.225)"},
+      {CB_POSITION_MAP_FLYING_DEVIL, "Flying Devil (Lv.235)"},
+      {CB_POSITION_MAP_EARTH_DRAGON, "Earth Dragon (Lv.250)"},
+      {CB_POSITION_MAP_VHAGAN, "Vhagan (Lv.270)"},
+      {CB_POSITION_MAP_IRON_DRAKE, "Iron Drake (Lv.275)"},
+      {CB_POSITION_MAP_ANCIENT_DRAGON, "Ancient Dragon (Lv.300)"},
+      {CB_POSITION_MAP_SULFAROS, "Sulfaros (Lv.320)"}
     }
   }
 };

@@ -5,13 +5,17 @@
     {"name":"potion_0","location":"fighting","x":81,"y":559,"width":12,"height":9},
     {"name":"potion_1","location":"fighting","x":81,"y":559,"width":12,"height":9},
     {"name":"no_sword","location":"fighting","x":150,"y":594,"width":50,"height":14},
+    {"name":"no_sword_stuck","location":"fighting","x":150,"y":594,"width":50,"height":14},
     {"name":"gear","location":"fighting","x":283,"y":358,"width":20,"height":18},
     {"name":"book","location":"fighting","x":39,"y":358,"width":20,"height":18},
     {"name":"buff_ranhain","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_dekdun","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_iceroost","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_vulcardi","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"buff_airos","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"buff_forilon","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
-    {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10}
+    {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10},
+    {"name":"mob_dead","location":"fighting","x":103,"y":346,"width":5,"height":5}
   ]
 }

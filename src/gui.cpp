@@ -54,9 +54,16 @@ void GUI::renderUI()
     Application::toggleVsync();
   }
 
-  if(ImGui::Button("Arrange"))
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 4"))
   {
-    Emulator::arrange();
+    Emulator::arrange(4);
+  }
+
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 6"))
+  {
+    Emulator::arrange(6);
   }
 
   ImGui::End();
@@ -125,6 +132,8 @@ void GUI::farmUI(const std::string &instance)
       ImGui::EndTabItem();
       return;
     }
+
+    ImGui::Checkbox("Reboot", &config.reboot);
 
     std::unordered_map<std::string, std::string> &portals = Store::portals;
     std::unordered_map<std::string, std::vector<Monster>> &monsters = Store::monsters;
