@@ -18,12 +18,14 @@ void Bot::run(const std::string &instance)
   currentRoutine = CB_ROUTINE_NONE;
   currentAction = CB_ROUTINE_NONE;
 
-  // Between 45 and 50 min reset
-  int expectedRebootTime = 1000 * 60 * Random::choose(120, 125);
+  int expectedRebootTime = 1000 * 60 * Random::choose(300, 310); // Reboot emulator
+  int expectedRestartTime = 1000 * 60 * 60; // Restart the app 
+
   if(config->reboot)
-  {
-    LOGGER_DEBUG("Instance {} will reboot in {}ms", instance, expectedRebootTime);
-  }
+    LOGGER_DEBUG("Reboot instance {} on {}ms", instance, expectedRebootTime);
+
+  if(config->restart)
+    LOGGER_DEBUG("Restarting app on instance {} on {}ms", instance, expectedRestartTime);
 
   if(config->farm)
     currentRoutine = CB_ROUTINE_FARM;
@@ -50,22 +52,6 @@ void Bot::run(const std::string &instance)
       continue;
     }
 
-    if(config->reboot)
-    {
-      // 45 min reset
-      // Check if the expected time to reboot has passed
-
-      if(tempo.hasPassed("reboot_" + instance, expectedRebootTime))
-      {
-        glm::ivec2 position = Emulator::getPosition(instance);
-        Emulator::reboot(instance);
-        // Wait for 30 sec after rebooting to start running again
-        waitFor(1000 * 30);
-        Emulator::setPosition(instance, position);
-        tempo.clearTimepoint("reboot_" + instance);
-      }
-    }
-
     std::mutex &instanceMutex = Store::mutexes[instance];
 
     auto start = std::chrono::high_resolution_clock::now();
@@ -78,6 +64,35 @@ void Bot::run(const std::string &instance)
       state.working.store(false);
       break;
     }
+
+    if(config->reboot)
+    {
+      // 45 min reset
+      // Check if the expected time to reboot has passed
+
+      if(tempo.hasPassed("reboot_" + instance, expectedRebootTime))
+      {
+        LOGGER_DEBUG("Rebooting instance {}", instance);
+        glm::ivec2 position = Emulator::getPosition(instance);
+        Emulator::reboot(instance);
+        // Wait for 30 sec after rebooting to start running again
+        waitFor(1000 * 30);
+        Emulator::setPosition(instance, position);
+        tempo.clearTimepoint("reboot_" + instance);
+      }
+    }
+
+    if(config->restart)
+    {
+      if(tempo.hasPassed("restart_" + instance, expectedRestartTime))
+      {
+        LOGGER_DEBUG("Restarting app on instance {}", instance);
+        Emulator::killapp(instance, CORAH_PACKAGE_NAME);
+        waitFor(1500, 100);
+        tempo.clearTimepoint("restart_" + instance);
+      }
+    }
+
 
     // Sets the routine
     if(config->farm && currentRoutine == CB_ROUTINE_NONE)
@@ -107,7 +122,7 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_ITEM_OPEN_ITEM_OPEN)
       handleItemOpen();
 
-    if(location == CB_LOCATION_LOGIN_LOGIN)
+    if(location == CB_LOCATION_LOGIN_LOGIN || location == CB_LOCATION_FAKE_LOGIN_FAKE_LOGIN)
       handleLogin();
 
     if(location == CB_LOCATION_HOME_HOME)
@@ -254,9 +269,9 @@ void Bot::handleFighting()
 
   if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
-    waitFor(1000, 100);
+    waitFor(3000, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
-    waitFor(1000, 100);
+    waitFor(3000, 100);
   }
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS)
@@ -361,7 +376,7 @@ void Bot::handleInventory()
           if(res.first)
           {
             Emulator::click(instance, {marker.x + res.second.x, marker.y + res.second.y, res.second.z, res.second.w});
-            waitFor(1500, 100);
+            waitFor(2500, 100);
             break;
           }
         }
@@ -384,8 +399,9 @@ void Bot::handleInventory()
       if(Emulator::compareImages(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]))
       {
         currentAction = CB_ACTION_REFRESH_SWORDS;
+        waitFor(2500, 100);
         Emulator::click(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]);
-        waitFor(1500, 100);
+        waitFor(2500, 100);
       }
     }
   }

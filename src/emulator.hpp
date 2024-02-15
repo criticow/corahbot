@@ -15,7 +15,7 @@ struct Marker;
 class Emulator
 {
   public:
-  static void arrange(int cols = 6);
+  static void arrange(int monitor = 1, int cols = 6);
   static glm::ivec2 getPosition(const std::string &windowTitle);
   static void setPosition(const std::string &windowTitle, glm::ivec2 position);
   // static std::vector<std::string> listInstances();

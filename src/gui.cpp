@@ -40,7 +40,7 @@ void RoundedTag(const char* label, ImVec4 bgColor, ImVec4 textColor, ImVec4 bord
 void GUI::renderUI()
 {
   ImVec2 windowSize = ImGui::GetIO().DisplaySize;
-  int baseWindowHeight = 100;
+  int baseWindowHeight = 120;
   int statsWindowWidth = 125;
 
   // START GENERAL WINDOW
@@ -55,15 +55,64 @@ void GUI::renderUI()
   }
 
   ImGui::SameLine();
-  if(ImGui::Button("Arrange 4"))
+  if(ImGui::Button("Start All"))
   {
-    Emulator::arrange(4);
+    for(auto &instance : instances)
+    {
+      InstanceState &state = Store::states[instance];
+
+      // Only if it is not already working
+      if(!state.working.load())
+      {
+        util::saveConfig(instance, Store::configs[instance]);
+        state.working.store(true);
+        std::thread(botThread, std::ref(instance)).detach();
+      }
+    }
   }
 
   ImGui::SameLine();
-  if(ImGui::Button("Arrange 6"))
+  if(ImGui::Button("Stop All"))
   {
-    Emulator::arrange(6);
+    for(auto &instance : instances)
+    {
+      InstanceState &state = Store::states[instance];
+      state.working.store(false);
+    }
+  }
+
+  if(ImGui::Button("Arrange 1 4"))
+  {
+    Emulator::arrange(1, 4);
+  }
+
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 1 5"))
+  {
+    Emulator::arrange(1, 5);
+  }
+
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 1 6"))
+  {
+    Emulator::arrange(1, 6);
+  }
+
+    if(ImGui::Button("Arrange 2 4"))
+  {
+    Emulator::arrange(2, 4);
+  }
+
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 2 5"))
+  {
+    Emulator::arrange(2, 5);
+  }
+
+  ImGui::SameLine();
+  if(ImGui::Button("Arrange 2 6"))
+  {
+    Emulator::arrange(2, 6);
   }
 
   ImGui::End();
@@ -134,6 +183,7 @@ void GUI::farmUI(const std::string &instance)
     }
 
     ImGui::Checkbox("Reboot", &config.reboot);
+    ImGui::Checkbox("Restart", &config.restart);
 
     std::unordered_map<std::string, std::string> &portals = Store::portals;
     std::unordered_map<std::string, std::vector<Monster>> &monsters = Store::monsters;

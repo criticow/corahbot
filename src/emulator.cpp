@@ -32,18 +32,26 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
   return TRUE;
 }
 
-void Emulator::arrange(int cols)
+void Emulator::arrange(int monitor, int cols)
 {
   std::vector<std::string> instances = Emulator::list();
   std::sort(instances.begin(), instances.end());
 
-  int x = -210;
-  int y = -1080;
+  int x = 0;
+  int y = 0;
+
+  if(monitor == 2)
+  {
+    x = -210;
+    y = -1080;
+  }
+  
   int counter = 0;
+  int index = 0;
 
   for(auto &instance : instances)
   {
-    if(counter == cols)
+    if(counter == cols && index < 8)
     {
       counter = 0;
       y += 380;
@@ -52,6 +60,7 @@ void Emulator::arrange(int cols)
     int xPos = x + (EMULATOR_WIDTH * counter);
     setPosition(instance, {xPos, y});
     counter++;
+    index++;
   }
 }
 
@@ -77,6 +86,7 @@ void Emulator::setPosition(const std::string &windowTitle, glm::ivec2 position)
   if(hwnd)
   {
     SetWindowPos(hwnd, HWND_TOP, position.x, position.y, EMULATOR_WIDTH, EMULATOR_HEIGHT, SWP_NOZORDER); // Brings window to top
+    SetForegroundWindow(hwnd);
   }
 }
 

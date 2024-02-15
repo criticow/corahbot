@@ -13,6 +13,8 @@ WorkConfig::WorkConfig(const std::string &json)
       buffs = document["buffs"].GetBool();
     if(document.HasMember("reboot"))
       reboot = document["reboot"].GetBool();
+    if(document.HasMember("restart"))
+      reboot = document["restart"].GetBool();
     if(document.HasMember("selectedBuffs"))
       loadVectorFromArray("selectedBuffs", selectedBuffs, document);
     if(document.HasMember("quests"))
@@ -40,6 +42,7 @@ std::string WorkConfig::toJson()
   document.AddMember("farm", farm, document.GetAllocator());
   document.AddMember("buffs", buffs, document.GetAllocator());
   document.AddMember("reboot", reboot, document.GetAllocator());
+  document.AddMember("restart", restart, document.GetAllocator());
   document.AddMember("selectedBuffs", createArrayFromVector(document, selectedBuffs), document.GetAllocator());
   document.AddMember("quests", quests, document.GetAllocator());
   document.AddMember("selectedQuests", createArrayFromVector(document, selectedQuests), document.GetAllocator());
