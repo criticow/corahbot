@@ -268,9 +268,12 @@ bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
   cv::Mat diff;
   cv::absdiff(image1, image2, diff);
   cv::Scalar sum = cv::sum(diff);
+  
+  // Set a threshold (adjust as needed)
+  int threshold = 100;
 
-  // If the sum of differences is zero, the images are the same
-  return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
+  // If the sum of differences is below the threshold for all channels, consider the images as the same
+  return sum[0] < threshold && sum[1] < threshold && sum[2] < threshold && sum[3] < threshold;
 }
 
 void Emulator::runapp(const std::string &windowTitle, const std::string &packageName)

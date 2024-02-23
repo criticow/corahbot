@@ -1,0 +1,14 @@
+####################### USAGE INSTRUCTIONS #######################
+
+1. Use Nox Emulator
+2. Use Android 7 32 bit
+3. Configure the emulator based on the screenshots on the screenshots folder
+4. Install the niagara-launcher.apk from apks folder
+5. Set the niagara-launcher as default launcher
+6. Install corah using the apk
+7. Set the corah app as favorite on the niagara launcher
+8. Create a new corah account/char or login into a existing char
+9. Open the corahbot
+10. Arrange the emulators to resize the window
+10. Enable farm
+11. Select portal and map and start the bot

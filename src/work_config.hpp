@@ -15,6 +15,7 @@ class WorkConfig
   bool quests = false;
   bool reboot = false;
   bool restart = false;
+  bool pets = false;
   int refreshMode = 0;
   std::string selectedPortal = CB_POSITION_MAP_RANHAIN;
   int selectedMonster = 0;

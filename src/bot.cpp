@@ -93,7 +93,6 @@ void Bot::run(const std::string &instance)
       }
     }
 
-
     // Sets the routine
     if(config->farm && currentRoutine == CB_ROUTINE_NONE)
       currentRoutine = CB_ROUTINE_FARM;
@@ -168,6 +167,13 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_SYSTEM_STOPPED_SYSTEM_STOPPED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
+      waitFor(500, 100);
+    }
+
+    if(location == CB_LOCATION_REFER_OPEN_REFER_OPEN)
+    {
+      // Clicking anywhere above the region of the refering method
+      Emulator::click(instance, Store::markers[CB_LOCATION_REFILL_REFILL][CB_POSITION_REFILL_REFILL_CLOSE_BTN]);
       waitFor(500, 100);
     }
 
@@ -298,6 +304,11 @@ void Bot::handleFighting()
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]);
       waitFor(500, 100);
     }
+  }
+
+  // Pets
+  if(currentRoutine == CB_ROUTINE_FARM && config->pets)
+  {
   }
 }
 
