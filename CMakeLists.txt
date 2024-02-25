@@ -15,14 +15,14 @@ add_subdirectory(deps/glbase)
 
 find_package(RapidJSON CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
-# find_package(Tesseract CONFIG REQUIRED)
+find_package(Tesseract CONFIG REQUIRED)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
   glbase
   ${OpenCV_LIBS}
   rapidjson
   Psapi
-  # Tesseract::libtesseract
+  Tesseract::libtesseract
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE

@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"mob_info_open","location":"mob_info_open","x":277,"y":68,"width":22,"height":50},
+  "markers": [
+    {"name":"close_btn","location":"mob_info_open","x":280,"y":70,"width":15,"height":13}
+  ]
+}

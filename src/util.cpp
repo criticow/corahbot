@@ -105,3 +105,16 @@ WorkConfig util::getConfig(const std::string &instance)
 
   return workConfig;
 }
+
+std::string util::trim(const std::string &str)
+{
+  size_t first = str.find_first_not_of(" \t\n\r");
+  size_t last = str.find_last_not_of(" \t\n\r");
+
+  if (first == std::string::npos || last == std::string::npos) {
+    // The string is empty or contains only whitespaces
+    return "";
+  }
+
+  return str.substr(first, last - first + 1);
+}

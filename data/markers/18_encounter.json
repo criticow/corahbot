@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"encounter","location":"encounter","x":249,"y":179,"width":57,"height":17},
+  "markers": [
+    {"name":"reward_middle","location":"encounter","x":154,"y":550,"width":38,"height":14},
+    {"name":"new_encounter","location":"encounter","x":107,"y":395,"width":38,"height":13},
+    {"name":"next_room","location":"encounter","x":141,"y":383,"width":38,"height":13},
+    {"name":"encounter_finished","location":"encounter","x":132,"y":341,"width":32,"height":9},
+    {"name":"energy_text_region","location":"encounter","x":108,"y":338,"width":128,"height":16},
+
+    {"name":"claim_top_left","location":"encounter","x":88,"y":474,"width":37,"height":13},
+    {"name":"claim_top_right","location":"encounter","x":223,"y":474,"width":35,"height":13},
+    {"name":"claim_bottom_right","location":"encounter","x":223,"y":553,"width":35,"height":13},
+    {"name":"claim_bottom_left","location":"encounter","x":87,"y":553,"width":35,"height":13},
+
+    {"name":"monster_top_left","location":"encounter","x":54,"y":423,"width":14,"height":14},
+    {"name":"monster_top_right","location":"encounter","x":189,"y":423,"width":14,"height":14},
+    {"name":"monster_bottom_left","location":"encounter","x":54,"y":504,"width":14,"height":14},
+    {"name":"monster_bottom_right","location":"encounter","x":189,"y":504,"width":14,"height":14},
+
+    {"name":"top_left_pixel","location":"encounter","x":52,"y":422,"width":1,"height":1},
+    {"name":"top_right_pixel","location":"encounter","x":186,"y":422,"width":1,"height":1},
+    {"name":"bottom_right_pixel","location":"encounter","x":186,"y":502,"width":1,"height":1},
+    {"name":"bottom_left_pixel","location":"encounter","x":52,"y":502,"width":1,"height":1}
+  ]
+}

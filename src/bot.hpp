@@ -5,6 +5,7 @@
 #include "emulator.hpp"
 #include "store.hpp"
 #include "work_config.hpp"
+#include <tesseract/baseapi.h>
 #include "generated_macros.hpp"
 
 class Bot
@@ -24,7 +25,10 @@ class Bot
   std::string location = CB_LOCATION_UNKNOWN;
   bool refreshSwords = false;
   bool refreshPotions = false;
+  int currentEncounterMonster = 0;
+  int currentEncounterAttack = 0;
   std::unordered_map<std::string, cv::Mat> snapshots;
+  tesseract::TessBaseAPI tess;
 
   void findLocation(const std::string &instance);
 
@@ -40,6 +44,14 @@ class Bot
   void handleQuests();
   void handleQuestReward();
   void handleAborQuest();
+  void handleEncounter();
 
   void waitFor(int amount, int deviation = 0);
+  bool checkEncounterRewards(std::unordered_map<std::string, Marker> &markers);
+  std::string textFromImage(const std::string &windowTitle, Marker &marker);
+
+  void initTess()
+  {
+    ASSERT(!tess.Init("data/tess", "eng", tesseract::OEM_DEFAULT), "Error initializing tesseract");
+  };
 };

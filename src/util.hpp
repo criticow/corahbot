@@ -11,4 +11,6 @@ namespace util
   std::string parseCMD(std::string cmd, std::vector<std::string> args);
   void saveConfig(const std::string &instance, WorkConfig &config);
   WorkConfig getConfig(const std::string &instance);
+  // Function to trim leading and trailing whitespaces from a string
+  std::string trim(const std::string& str);
 };

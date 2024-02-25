@@ -186,6 +186,10 @@ void GUI::farmUI(const std::string &instance)
     ImGui::SameLine();
     ImGui::Checkbox("Restart", &config.restart);
     ImGui::Checkbox("Collect Pets", &config.pets);
+    ImGui::SameLine();
+    ImGui::Checkbox("Fishing Like Fisherman", &config.fishing);
+    ImGui::SameLine();
+    ImGui::Checkbox("Encounter", &config.encounter);
 
     std::unordered_map<std::string, std::string> &portals = Store::portals;
     std::unordered_map<std::string, std::vector<Monster>> &monsters = Store::monsters;

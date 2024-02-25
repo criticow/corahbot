@@ -6,8 +6,78 @@ void Bot::waitFor(int amount, int deviation)
   std::this_thread::sleep_for(std::chrono::milliseconds(finalAmount));
 }
 
+bool Bot::checkEncounterRewards(std::unordered_map<std::string, Marker> &markers)
+{
+  bool claimed = false;
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_TOP_LEFT]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_TOP_LEFT]);
+    waitFor(1500, 100);
+    claimed = true;
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_TOP_RIGHT]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_TOP_RIGHT]);
+    waitFor(1500, 100);
+    claimed = true;
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_BOTTOM_RIGHT]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_BOTTOM_RIGHT]);
+    waitFor(1500, 100);
+    claimed = true;
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_BOTTOM_LEFT]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_CLAIM_BOTTOM_LEFT]);
+    waitFor(1500, 100);
+    claimed = true;
+  }
+
+  return claimed;
+}
+
+std::string Bot::textFromImage(const std::string &windowTitle, Marker &marker)
+{
+  std::string text;
+
+  cv::Mat image = Emulator::printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  // Convert cv::Mat to RGB format (STB Image uses RGB)
+  cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+
+  // Get image dimensions
+  int width = image.cols;
+  int height = image.rows;
+  int channels = image.channels();
+
+  // Read the image using stb_image
+  unsigned char* imageData = image.data;
+  
+  // Set the image for OCR
+  tess.SetImage(imageData, width, height, channels, channels * width);
+
+  // Perform OCR and get the result
+  char* outText = tess.GetUTF8Text();
+
+  // Check if the detected text is empty or contains only whitespace
+  if (outText != nullptr && std::string(outText).find_first_not_of(" \t\n\r\0") != std::string::npos)
+  {
+    text = outText;
+  }
+
+  // Release resources
+  delete[] outText;
+
+  return text;
+}
+
 void Bot::run(const std::string &instance)
 {
+  initTess();
   int actionsPerSecond = 5;
   int crashCounter = 0;
 
@@ -29,6 +99,8 @@ void Bot::run(const std::string &instance)
 
   if(config->farm)
     currentRoutine = CB_ROUTINE_FARM;
+
+  tempo.setCooldown("clear_encounter_" + instance, 0);
 
   while(true)
   {
@@ -101,6 +173,10 @@ void Bot::run(const std::string &instance)
 
     findLocation(instance);
 
+    // If is not inside the encounter clear the encounter action
+    if(location != CB_LOCATION_ENCOUNTER_ENCOUNTER && currentAction == CB_ACTION_CLEAR_ENCOUNTER)
+      currentAction = CB_ACTION_REFRESH_SWORDS;
+
     if(location == CB_LOCATION_FIGHTING_FIGHTING)
     {
       if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_NONE)
@@ -145,6 +221,9 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_ABORT_QUEST_ABORT_QUEST)
       handleAborQuest();
 
+    if(location == CB_LOCATION_ENCOUNTER_ENCOUNTER)
+      handleEncounter();
+
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
@@ -175,6 +254,18 @@ void Bot::run(const std::string &instance)
       // Clicking anywhere above the region of the refering method
       Emulator::click(instance, Store::markers[CB_LOCATION_REFILL_REFILL][CB_POSITION_REFILL_REFILL_CLOSE_BTN]);
       waitFor(500, 100);
+    }
+
+    if(location == CB_LOCATION_MOB_INFO_OPEN_MOB_INFO_OPEN)
+    {
+      std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_MOB_INFO_OPEN_MOB_INFO_OPEN];
+      // Sometimes if the game or the emulator is lagging the bot opens a mob info window after selecting the mob
+      // from the map and gets stuck, here it will be checked if said window is open and close it
+      if(Emulator::compareImages(instance, markers[CB_POSITION_MOB_INFO_OPEN_CLOSE_BTN]))
+      {
+        Emulator::click(instance, markers[CB_POSITION_MOB_INFO_OPEN_CLOSE_BTN]);
+        waitFor(1000, 100);
+      }
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -309,6 +400,14 @@ void Bot::handleFighting()
   // Pets
   if(currentRoutine == CB_ROUTINE_FARM && config->pets)
   {
+  }
+
+  // Encounter
+  if(currentRoutine == CB_ROUTINE_FARM && config->encounter && !tempo.isOnCooldown("clear_encounter_" + instance))
+  {
+    currentAction = CB_ACTION_CLEAR_ENCOUNTER;
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_SHOW_ENCOUNTER]);
+    waitFor(3500, 100);
   }
 }
 
@@ -588,6 +687,190 @@ void Bot::handleAborQuest()
       waitFor(500, 100);
     }
   }
+}
+
+void Bot::handleEncounter()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ENCOUNTER_ENCOUNTER];
+
+  bool encounterFinished = false;
+
+  std::string energyText = textFromImage(instance, markers[CB_POSITION_ENCOUNTER_ENERGY_TEXT_REGION]);
+  if(!energyText.empty())
+  {
+    // Og string looks like 4 0/200(numbers here)
+    std::vector<std::string> values = util::split(energyText, '(');
+    if(!values.empty())
+    {
+      // substring will look like
+      values = util::split(values[0], ' ');
+      if(values.size() > 1)
+      {
+        if(values[1] == "0/200")
+        {
+          encounterFinished = true;
+        }
+      }
+    }
+  }
+
+  // Exit if the encounter is finished or has passed 2 minutes
+  if(encounterFinished || tempo.hasPassed("exit_encounter_" + instance, 1000 * 60 * 2))
+  {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    currentEncounterAttack = 0;
+    currentEncounterMonster = 0;
+
+    if(Emulator::compareImages(instance, markers[CB_LOCATION_ENCOUNTER_ENCOUNTER]))
+    {
+      Emulator::click(instance, markers[CB_LOCATION_ENCOUNTER_ENCOUNTER]);
+      waitFor(2000, 100);
+    }
+
+    // Set cooldown of 30 min to clear encounter again
+    tempo.setCooldown("clear_encounter_" + instance, 1000 * 60 * 30);
+    return;
+  }
+
+  if(!config->encounter || currentAction != CB_ACTION_CLEAR_ENCOUNTER)
+  {
+    return;
+  }
+
+
+  // Check if there is something to claim
+  if(checkEncounterRewards(markers))
+  {
+    return;
+  }
+  // End check
+
+  // Check if needs to go to the next room
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_NEXT_ROOM]))
+  {
+    waitFor(3500, 100);
+    checkEncounterRewards(markers);
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_NEXT_ROOM]);
+    waitFor(1500, 100);
+    return;
+  }
+  // End check
+
+  // Check if needs to start a new encounter
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_NEW_ENCOUNTER]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_NEW_ENCOUNTER]);
+    waitFor(1500, 100);
+    return;
+  }
+  // End Check
+
+  // Check if needs to claim middle reward
+  if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_REWARD_MIDDLE]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_REWARD_MIDDLE]);
+    waitFor(1500, 100);
+    return;
+  }
+  // End check
+
+  if(currentEncounterMonster == 0)
+  {
+    Marker &pixel = markers[CB_POSITION_ENCOUNTER_TOP_LEFT_PIXEL];
+    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
+
+    int blue = color[0];
+    int green = color[1];
+    int red = color[2];
+
+    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
+    bool hasHp = red != 1 || green != 40 || blue != 75;
+
+    if(hasHp)
+    {
+      Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_LEFT]);
+      waitFor(1200, 100);
+    }
+    else
+    {
+      currentEncounterMonster = 1;
+    }
+  }
+
+  if(currentEncounterMonster == 1)
+  {
+    Marker &pixel = markers[CB_POSITION_ENCOUNTER_TOP_RIGHT_PIXEL];
+    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
+
+    int blue = color[0];
+    int green = color[1];
+    int red = color[2];
+
+    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
+    bool hasHp = red != 1 || green != 40 || blue != 75;
+
+    if(hasHp)
+    {
+      Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_RIGHT]);
+      waitFor(1200, 100);
+    }
+    else
+    {
+      currentEncounterMonster = 2;
+    }
+  }
+
+  if(currentEncounterMonster == 2)
+  {
+    Marker &pixel = markers[CB_POSITION_ENCOUNTER_BOTTOM_RIGHT_PIXEL];
+    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
+
+    int blue = color[0];
+    int green = color[1];
+    int red = color[2];
+
+    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
+    bool hasHp = red != 1 || green != 40 || blue != 75;
+
+    if(hasHp)
+    {
+      Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_RIGHT]);
+      waitFor(1200, 100);
+    }
+    else
+    {
+      currentEncounterMonster = 3;
+    }
+  }
+
+  if(currentEncounterMonster == 3)
+  {
+    Marker &pixel = markers[CB_POSITION_ENCOUNTER_BOTTOM_LEFT_PIXEL];
+    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
+
+    int blue = color[0];
+    int green = color[1];
+    int red = color[2];
+
+    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
+    bool hasHp = red != 1 || green != 40 || blue != 75;
+
+    if(hasHp)
+    {
+      Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_LEFT]);
+      waitFor(1200, 100);
+    }
+  }
+
+  currentEncounterAttack++;
+
+  if(currentEncounterAttack > 1)
+  {
+    currentEncounterMonster++;
+    currentEncounterAttack = 0;
+  }
+
+  if(currentEncounterMonster > 3) currentEncounterMonster = 0;
 }
 
 void Bot::handleQuests()

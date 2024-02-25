@@ -217,6 +217,9 @@ std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle, flo
   cv::Point minLoc, maxLoc;
   cv::minMaxLoc(result, nullptr, nullptr, &minLoc, &maxLoc);
 
+  float res = result.at<float>(maxLoc);
+  std::cout << res << std::endl;
+
   if (result.at<float>(maxLoc) > threshold) {
     matchResult.first = true;
     matchResult.second = glm::ivec4(maxLoc.x, maxLoc.y, needle.cols, needle.rows);
@@ -378,4 +381,11 @@ cv::Mat Emulator::printscreen(const std::string &windowTitle, int x, int y, int 
 cv::Mat Emulator::printscreen(const std::string &windowTitle, Marker &marker)
 {
   return printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+}
+
+cv::Vec3b Emulator::getPixelColor(const std::string &windowTitle, int x, int y)
+{
+  cv::Mat image = printscreen(windowTitle);
+  cv::Vec3b color = image.at<cv::Vec3b>(y, x);
+  return color;
 }

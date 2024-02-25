@@ -7,32 +7,21 @@ WorkConfig::WorkConfig(const std::string &json)
 
   if(!document.HasParseError() && document.IsObject())
   {
-    if(document.HasMember("farm"))
-      farm = document["farm"].GetBool();
-    if(document.HasMember("buffs"))
-      buffs = document["buffs"].GetBool();
-    if(document.HasMember("reboot"))
-      reboot = document["reboot"].GetBool();
-    if(document.HasMember("restart"))
-      restart = document["restart"].GetBool();
-    if(document.HasMember("pets"))
-      pets = document["pets"].GetBool();
-    if(document.HasMember("selectedBuffs"))
-      loadVectorFromArray("selectedBuffs", selectedBuffs, document);
-    if(document.HasMember("quests"))
-      quests = document["quests"].GetBool();
-    if(document.HasMember("selectedQuests"))
-      loadVectorFromArray("selectedQuests", selectedQuests, document);
-    if(document.HasMember("selectedPortal"))
-      selectedPortal = document["selectedPortal"].GetString();
-    if(document.HasMember("swordsThreshold"))
-      swordsThreshold = document["swordsThreshold"].GetInt();
-    if(document.HasMember("refreshMode"))
-      refreshMode = document["refreshMode"].GetInt();
-    if(document.HasMember("potionsThreshold"))
-      potionsThreshold = document["potionsThreshold"].GetInt();
-    if(document.HasMember("selectedMonster"))
-      selectedMonster = document["selectedMonster"].GetInt();
+    if(document.HasMember("farm")) farm = document["farm"].GetBool();
+    if(document.HasMember("buffs")) buffs = document["buffs"].GetBool();
+    if(document.HasMember("reboot")) reboot = document["reboot"].GetBool();
+    if(document.HasMember("restart")) restart = document["restart"].GetBool();
+    if(document.HasMember("pets")) pets = document["pets"].GetBool();
+    if(document.HasMember("encounter")) encounter = document["encounter"].GetBool();
+    if(document.HasMember("fishing")) fishing = document["fishing"].GetBool();
+    if(document.HasMember("selectedBuffs")) loadVectorFromArray("selectedBuffs", selectedBuffs, document);
+    if(document.HasMember("quests")) quests = document["quests"].GetBool();
+    if(document.HasMember("selectedQuests")) loadVectorFromArray("selectedQuests", selectedQuests, document);
+    if(document.HasMember("selectedPortal")) selectedPortal = document["selectedPortal"].GetString();
+    if(document.HasMember("swordsThreshold")) swordsThreshold = document["swordsThreshold"].GetInt();
+    if(document.HasMember("refreshMode")) refreshMode = document["refreshMode"].GetInt();
+    if(document.HasMember("potionsThreshold")) potionsThreshold = document["potionsThreshold"].GetInt();
+    if(document.HasMember("selectedMonster")) selectedMonster = document["selectedMonster"].GetInt();
   }
 }
 
@@ -46,6 +35,8 @@ std::string WorkConfig::toJson()
   document.AddMember("reboot", reboot, document.GetAllocator());
   document.AddMember("restart", restart, document.GetAllocator());
   document.AddMember("pets", pets, document.GetAllocator());
+  document.AddMember("encounter", encounter, document.GetAllocator());
+  document.AddMember("fishing", fishing, document.GetAllocator());
   document.AddMember("selectedBuffs", createArrayFromVector(document, selectedBuffs), document.GetAllocator());
   document.AddMember("quests", quests, document.GetAllocator());
   document.AddMember("selectedQuests", createArrayFromVector(document, selectedQuests), document.GetAllocator());
