@@ -39,7 +39,12 @@ std::unordered_map<std::string, std::string> Store::portals{
   // "Mitron"
 };
 
-std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_MODE_CLOSE, CB_REFRESH_MODE_MAP};
+std::vector<std::string> Store::refreshModes{
+  CB_REFRESH_MODE_LOGOUT,
+  CB_REFRESH_MODE_MAP,
+  CB_REFRESH_MODE_CLOSE,
+  CB_REFRESH_MODE_RANDOM
+};
 
 std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
   {

@@ -27,6 +27,7 @@ class Bot
   bool refreshPotions = false;
   int currentEncounterMonster = 0;
   int currentEncounterAttack = 0;
+  int refreshMode = 0;
   std::unordered_map<std::string, cv::Mat> snapshots;
   tesseract::TessBaseAPI tess;
 

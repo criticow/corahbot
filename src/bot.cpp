@@ -111,6 +111,13 @@ void Bot::run(const std::string &instance)
 
   tempo.setCooldown("clear_encounter_" + instance, 0);
 
+  refreshMode = config->refreshMode;
+
+  if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_RANDOM)
+  {
+    refreshMode = Random::choose(0, 1);
+  }
+
   while(true)
   {
     HWND hwnd = FindWindow(nullptr, instance.c_str());
@@ -295,6 +302,7 @@ void Bot::run(const std::string &instance)
     summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
     summary->questsDone = std::to_string(questsDone);
     summary->encounterCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_encounter_" + instance) / 1000 * -1));
+    summary->nextRefreshMode = Store::refreshModes[refreshMode];
 
     instanceMutex.unlock();
 
@@ -344,18 +352,27 @@ void Bot::handleFighting()
   {
     // Open the options menu to start the refresh
     currentAction = CB_ACTION_REFRESH_POTIONS;
-    if(Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_LOGOUT)
+    std::string configMode = Store::refreshModes[config->refreshMode];
+    std::string currentMode = Store::refreshModes[refreshMode];
+
+    if(currentMode == CB_REFRESH_MODE_LOGOUT)
     {
       waitFor(1000, 100);
       Emulator::click(instance, markers[CB_POSITION_FIGHTING_GEAR]);
       waitFor(1500, 100);
+
+      if(configMode == CB_REFRESH_MODE_RANDOM)
+      {
+        // Choose a new refresh mode between logout and map
+        refreshMode = Random::choose(0, 1);
+      }
     }
-    else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_CLOSE)
+    else if (currentMode == CB_REFRESH_MODE_CLOSE)
     {
       Emulator::killapp(instance, CORAH_PACKAGE_NAME);
       waitFor(1500, 100);
     }
-    else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_MAP)
+    else if (currentMode == CB_REFRESH_MODE_MAP)
     {
       // Check if swords are already disabled
       if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
@@ -363,6 +380,12 @@ void Bot::handleFighting()
         // Open map
         Emulator::click(instance, markers[CB_POSITION_FIGHTING_MAP]);
         waitFor(1500, 100);
+
+        if(configMode == CB_REFRESH_MODE_RANDOM)
+        {
+          // Choose a new refresh mode between logout and map
+          refreshMode = Random::choose(0, 1);
+        }
       }
       else
       {
@@ -378,9 +401,12 @@ void Bot::handleFighting()
   if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
-    waitFor(500, 100);
-    Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
-    waitFor(1000, 100);
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
+    {
+      waitFor(1000, 100);
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
+      waitFor(1500, 100);
+    }
   }
   // END SWORDS ACTIONS
 
@@ -594,6 +620,7 @@ void Bot::handleHome()
 
   if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_HOME_START_BTN]))
   {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
     Emulator::click(instance, markers[CB_POSITION_HOME_START_BTN]);
     waitFor(1500, 100);
   }
@@ -602,6 +629,7 @@ void Bot::handleHome()
 void Bot::handleRefill()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[location];
+  currentAction = CB_ACTION_REFRESH_SWORDS;
 
   if(location == CB_LOCATION_REFILL_REFILL)
   {
@@ -619,7 +647,6 @@ void Bot::handleRefill()
 
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_MAX_BTN_INACTIVE]))
     {
-      currentAction = CB_ACTION_REFRESH_SWORDS;
       Emulator::click(instance, markers[CB_POSITION_REFILL_REFILL_CLOSE_BTN]);
       waitFor(500, 100);
     }
@@ -641,7 +668,6 @@ void Bot::handleRefill()
 
     if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[CB_POSITION_REFILL_PREMIUM_MAX_BTN_INACTIVE]))
     {
-      currentAction = CB_ACTION_REFRESH_SWORDS;
       Emulator::click(instance, markers[CB_POSITION_REFILL_PREMIUM_REFILL_CLOSE_BTN]);
       waitFor(500, 100);
     }
@@ -654,36 +680,44 @@ void Bot::handleMap()
 
   Monster &monster = Store::monsters[config->selectedPortal][config->selectedMonster];
 
-  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_REFRESH_POTIONS)
+  if(currentRoutine != CB_ROUTINE_FARM)
+  {
+    return;
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_POTIONS)
   {
     if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_TOWN]))
     {
       Emulator::click(instance, markers[CB_POSITION_MAP_TOWN]);
       waitFor(1500, 100);
     }
-  }
 
-  // Check if it is not in the correct portal, to change location
-  if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config->selectedPortal]))
-  {
-    LOGGER_DEBUG("It is not in the correct portal");
-  }
-
-  if(currentRoutine == CB_ROUTINE_FARM && Emulator::compareImages(instance, markers[monster.name]))
-  {
-    Emulator::click(instance, markers[monster.name]);
-    waitFor(1500, 100);
-  }
-
-  // Close the map if it should not go the the fighting scene
-  if(currentAction == CB_ACTION_REFRESH_POTIONS || Emulator::compareImages(instance, markers[CB_LOCATION_MAP_MAP]))
-  {
-    currentAction = CB_ACTION_REFRESH_SWORDS;
-    // Click on the close button
-    if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_CLOSE_BTN]))
+    // Close the map if it should not go the the fighting scene
+    if(Emulator::compareImages(instance, markers[CB_LOCATION_MAP_MAP]))
     {
-      Emulator::click(instance, markers[CB_POSITION_MAP_CLOSE_BTN]);
-      waitFor(1000, 100);
+      currentAction = CB_ACTION_REFRESH_SWORDS;
+      // Click on the close button
+      if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_CLOSE_BTN]))
+      {
+        Emulator::click(instance, markers[CB_POSITION_MAP_CLOSE_BTN]);
+        waitFor(1000, 100);
+      }
+    }
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_SWORDS || currentAction == CB_ACTION_NONE)
+  {
+    // Check if it is not in the correct portal, to change location
+    // if(!Emulator::compareImages(instance, markers[config->selectedPortal]))
+    // {
+    //   LOGGER_DEBUG("It is not in the correct portal");
+    // }
+
+    if(Emulator::compareImages(instance, markers[monster.name]))
+    {
+      Emulator::click(instance, markers[monster.name]);
+      waitFor(1500, 100);
     }
   }
 }

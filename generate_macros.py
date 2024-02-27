@@ -50,6 +50,7 @@ with open(generated_file, "w") as file:
   file.write('#define CB_REFRESH_MODE_LOGOUT "logout"\n')
   file.write('#define CB_REFRESH_MODE_CLOSE "close"\n')
   file.write('#define CB_REFRESH_MODE_MAP "map"\n')
+  file.write('#define CB_REFRESH_MODE_RANDOM "random"\n')
 
   for macro in macros:
     file.write(macro)

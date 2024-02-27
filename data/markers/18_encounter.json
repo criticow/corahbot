@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
-  "identifier": {"name":"encounter","location":"encounter","x":249,"y":179,"width":57,"height":17},
+  "identifier": {"name":"encounter","location":"encounter","x":261,"y":183,"width":37,"height":10},
   "markers": [
     {"name":"reward_middle","location":"encounter","x":154,"y":550,"width":38,"height":14},
     {"name":"new_encounter","location":"encounter","x":107,"y":395,"width":38,"height":13},
