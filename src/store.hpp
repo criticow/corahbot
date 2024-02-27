@@ -70,7 +70,7 @@ struct Selectable
 
 struct Summary
 {
-  std::string time = "000:00:00";
+  std::string time = "00:00:00";
   std::string ms = "unknown";
   std::string actionsPerSecond = "unknown";
   std::string routine = "unknown";
@@ -80,6 +80,7 @@ struct Summary
   std::string refreshPotions = "false";
   std::string crashs = "0";
   std::string questsDone = "0";
+  std::string encounterCooldown = "00:00:00";
 };
 
 class Store

@@ -49,6 +49,7 @@ with open(generated_file, "w") as file:
   file.write('// REFRESH MODES MACROS\n')
   file.write('#define CB_REFRESH_MODE_LOGOUT "logout"\n')
   file.write('#define CB_REFRESH_MODE_CLOSE "close"\n')
+  file.write('#define CB_REFRESH_MODE_MAP "map"\n')
 
   for macro in macros:
     file.write(macro)

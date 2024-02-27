@@ -17,6 +17,7 @@
     {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
     {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10},
     {"name":"mob_dead","location":"fighting","x":103,"y":346,"width":5,"height":5},
-    {"name":"show_encounter","location":"fighting","x":249,"y":179,"width":37,"height":17}
+    {"name":"show_encounter","location":"fighting","x":249,"y":179,"width":37,"height":17},
+    {"name":"map","location":"fighting","x":255,"y":54,"width":43,"height":28}
   ]
 }

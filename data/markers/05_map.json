@@ -3,6 +3,7 @@
   "identifier": {"name":"map","location":"map","x":56,"y":53,"width":23,"height":14},
   "markers": [
     {"name":"close_btn","location":"map","x":284,"y":53,"width":25,"height":11},
+    {"name":"town","location":"map","x":129,"y":501,"width":15,"height":17},
 
     {"name":"ranhain","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"bear","location":"map","x":129,"y":411,"width":16,"height":16},

@@ -46,6 +46,7 @@ class Bot
   void handleAborQuest();
   void handleEncounter();
 
+  std::string secondsToTime(int seconds);
   void waitFor(int amount, int deviation = 0);
   bool checkEncounterRewards(std::unordered_map<std::string, Marker> &markers);
   std::string textFromImage(const std::string &windowTitle, Marker &marker);

@@ -36,12 +36,10 @@ std::unordered_map<std::string, std::string> Store::portals{
   { CB_POSITION_MAP_ICEROOST, "Iceroost"},
   { CB_POSITION_MAP_FORILON, "Forilon"},
   { CB_POSITION_MAP_AIROS, "Airos"}
-  // "Forilon",
-  // "Airos",
   // "Mitron"
 };
 
-std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_MODE_CLOSE};
+std::vector<std::string> Store::refreshModes{CB_REFRESH_MODE_LOGOUT, CB_REFRESH_MODE_CLOSE, CB_REFRESH_MODE_MAP};
 
 std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
   {

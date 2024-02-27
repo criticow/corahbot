@@ -1,5 +1,14 @@
 #include "bot.hpp"
 
+std::string Bot::secondsToTime(int seconds)
+{
+  int h = seconds / 3600;
+  int m = (seconds % 3600) / 60;
+  int s = seconds % 60;
+
+  return std::format("{:02d}:{:02d}:{:02d}", h, m, s);
+}
+
 void Bot::waitFor(int amount, int deviation)
 {
   int finalAmount = Random::choose(amount, amount + deviation);
@@ -273,15 +282,9 @@ void Bot::run(const std::string &instance)
 
     int hasTimeLeft = duration.count() < 1000 / actionsPerSecond;
 
-    int totalSeconds = static_cast<int>(tempo.getTime());
-
-    int hours = totalSeconds / 3600;
-    int minutes = (totalSeconds % 3600) / 60;
-    int seconds = totalSeconds % 60;
-
     instanceMutex.lock();
 
-    summary->time = std::format("{:03d}:{:02d}:{:02d}", hours, minutes, seconds);
+    summary->time = secondsToTime(static_cast<int>(tempo.getTime()));
     summary->location = location;
     summary->routine = currentRoutine;
     summary->nextAction = currentAction;
@@ -291,6 +294,7 @@ void Bot::run(const std::string &instance)
     summary->ms = std::to_string(duration.count());
     summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
     summary->questsDone = std::to_string(questsDone);
+    summary->encounterCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_encounter_" + instance) / 1000 * -1));
 
     instanceMutex.unlock();
 
@@ -350,6 +354,22 @@ void Bot::handleFighting()
     {
       Emulator::killapp(instance, CORAH_PACKAGE_NAME);
       waitFor(1500, 100);
+    }
+    else if (Store::refreshModes[config->refreshMode] == CB_REFRESH_MODE_MAP)
+    {
+      // Check if swords are already disabled
+      if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
+      {
+        // Open map
+        Emulator::click(instance, markers[CB_POSITION_FIGHTING_MAP]);
+        waitFor(1500, 100);
+      }
+      else
+      {
+        // Stop attacking
+        Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
+        waitFor(1500, 100);
+      }
     }
   }
   // END POTIONS ACTIONS
@@ -634,6 +654,14 @@ void Bot::handleMap()
 
   Monster &monster = Store::monsters[config->selectedPortal][config->selectedMonster];
 
+  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_REFRESH_POTIONS)
+  {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_TOWN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_MAP_TOWN]);
+      waitFor(1500, 100);
+    }
+  }
 
   // Check if it is not in the correct portal, to change location
   if(currentRoutine == CB_ROUTINE_FARM && !Emulator::compareImages(instance, markers[config->selectedPortal]))
@@ -715,7 +743,7 @@ void Bot::handleEncounter()
   }
 
   // Exit if the encounter is finished or has passed 2 minutes
-  if(encounterFinished || tempo.hasPassed("exit_encounter_" + instance, 1000 * 60 * 2))
+  if(config->encounter && (encounterFinished || tempo.hasPassed("exit_encounter_" + instance, 1000 * 60 * 2)))
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
     currentEncounterAttack = 0;
@@ -736,7 +764,6 @@ void Bot::handleEncounter()
   {
     return;
   }
-
 
   // Check if there is something to claim
   if(checkEncounterRewards(markers))
