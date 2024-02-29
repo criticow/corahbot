@@ -217,8 +217,8 @@ std::pair<bool, glm::ivec4> Emulator::find(cv::Mat haystack, cv::Mat needle, flo
   cv::Point minLoc, maxLoc;
   cv::minMaxLoc(result, nullptr, nullptr, &minLoc, &maxLoc);
 
-  float res = result.at<float>(maxLoc);
-  std::cout << res << std::endl;
+  // float res = result.at<float>(maxLoc);
+  // std::cout << res << std::endl;
 
   if (result.at<float>(maxLoc) > threshold) {
     matchResult.first = true;
@@ -271,16 +271,17 @@ bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
   cv::Mat diff;
   cv::absdiff(image1, image2, diff);
   cv::Scalar sum = cv::sum(diff);
-  
-  // With Threshold for Schem
-  // // Set a threshold (adjust as needed)
-  // int threshold = 100;
 
-  // // If the sum of differences is below the threshold for all channels, consider the images as the same
-  // return sum[0] < threshold && sum[1] < threshold && sum[2] < threshold && sum[3] < threshold;
+#ifdef NDEBUG // For dist
+  // Set a threshold (adjust as needed)
+  int threshold = 100;
 
+  // If the sum of differences is below the threshold for all channels, consider the images as the same
+  return sum[0] < threshold && sum[1] < threshold && sum[2] < threshold && sum[3] < threshold;
+#else // For debug
   // If the sum of differences is zero, the images are the same
   return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
+#endif
 }
 
 void Emulator::runapp(const std::string &windowTitle, const std::string &packageName)

@@ -1,0 +1,18 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"fishing","location":"fishing","x":63,"y":64,"width":21,"height":13},
+  "markers": [
+    {"name":"baiting_disabled","location":"fishing","x":161,"y":536,"width":25,"height":20},
+    {"name":"start_fishing","location":"fishing","x":229,"y":537,"width":33,"height":13},
+    {"name":"bait_text_region","location":"fishing","x":147,"y":541,"width":50,"height":17},
+    {"name":"daily_quota_text","location":"fishing","x":216,"y":574,"width":50,"height":13},
+
+    {"name":"baiting_disabled_down","location":"fishing","x":161,"y":566,"width":25,"height":20},
+    {"name":"start_fishing_down","location":"fishing","x":229,"y":567,"width":33,"height":13},
+    {"name":"start_fishing_down_pressed","location":"fishing","x":229,"y":567,"width":33,"height":13},
+    {"name":"bait_text_region_down","location":"fishing","x":147,"y":570,"width":50,"height":17},
+    {"name":"daily_quota_text_down","location":"fishing","x":216,"y":605,"width":50,"height":13},
+
+    {"name":"close_btn","location":"fishing","x":283,"y":64,"width":15,"height":14}
+  ]
+}

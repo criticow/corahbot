@@ -22,6 +22,8 @@
     {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10},
     {"name":"mob_dead","location":"fighting","x":103,"y":346,"width":5,"height":5},
     {"name":"show_encounter","location":"fighting","x":261,"y":183,"width":37,"height":10},
-    {"name":"map","location":"fighting","x":255,"y":54,"width":43,"height":28}
+    {"name":"map","location":"fighting","x":255,"y":54,"width":43,"height":28},
+
+    {"name":"fishing","location":"fighting","x":216,"y":191,"width":15,"height":14}
   ]
 }

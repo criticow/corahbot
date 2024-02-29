@@ -46,10 +46,12 @@ class Bot
   void handleQuestReward();
   void handleAborQuest();
   void handleEncounter();
+  void handleFishing();
 
   std::string secondsToTime(int seconds);
   void waitFor(int amount, int deviation = 0);
   bool checkEncounterRewards(std::unordered_map<std::string, Marker> &markers);
+  std::string textFromImage(cv::Mat &image);
   std::string textFromImage(const std::string &windowTitle, Marker &marker);
 
   void initTess()

@@ -49,14 +49,9 @@ bool Bot::checkEncounterRewards(std::unordered_map<std::string, Marker> &markers
   return claimed;
 }
 
-std::string Bot::textFromImage(const std::string &windowTitle, Marker &marker)
+std::string Bot::textFromImage(cv::Mat &image)
 {
   std::string text;
-
-  cv::Mat image = Emulator::printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
-
-  // Convert cv::Mat to RGB format (STB Image uses RGB)
-  cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
   // Get image dimensions
   int width = image.cols;
@@ -82,6 +77,16 @@ std::string Bot::textFromImage(const std::string &windowTitle, Marker &marker)
   delete[] outText;
 
   return text;
+}
+
+std::string Bot::textFromImage(const std::string &windowTitle, Marker &marker)
+{
+  cv::Mat image = Emulator::printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  // Convert cv::Mat to RGB format (STB Image uses RGB)
+  cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+
+  return textFromImage(image);
 }
 
 void Bot::run(const std::string &instance)
@@ -240,6 +245,9 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_ENCOUNTER_ENCOUNTER)
       handleEncounter();
 
+    if(location == CB_LOCATION_FISHING_FISHING)
+      handleFishing();
+
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
@@ -255,6 +263,9 @@ void Bot::run(const std::string &instance)
 
     if(location == CB_LOCATION_APP_CRASHED_APP_CRASHED)
     {
+      // Set cooldown of 30 min to clear encounter again
+      tempo.setCooldown("clear_fishing_" + instance, 1000 * 60 * 0);
+      tempo.clearTimepoint("exit_fishing_" + instance);
       Emulator::click(instance, Store::markers[CB_LOCATION_LOGIN_LOGIN][CB_POSITION_LOGIN_LOGIN_BTN]);
       waitFor(500, 100);
     }
@@ -302,6 +313,7 @@ void Bot::run(const std::string &instance)
     summary->actionsPerSecond = hasTimeLeft ? std::to_string(actionsPerSecond) : std::to_string(1000 / duration.count());
     summary->questsDone = std::to_string(questsDone);
     summary->encounterCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_encounter_" + instance) / 1000 * -1));
+    summary->fishingCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_fishing_" + instance) / 1000 * -1));
     summary->nextRefreshMode = Store::refreshModes[refreshMode];
 
     instanceMutex.unlock();
@@ -310,6 +322,7 @@ void Bot::run(const std::string &instance)
     if(hasTimeLeft)
       waitFor((int)(1000 / actionsPerSecond) - duration.count());
   }
+  tess.End();
 }
 
 void Bot::findLocation(const std::string &instance)
@@ -343,10 +356,10 @@ void Bot::handleFighting()
     refreshPotions = true;
   }
 
-  if(currentRoutine == CB_ROUTINE_FARM && !refreshPotions && currentAction == CB_ACTION_REFRESH_POTIONS)
-  {
-    currentAction = CB_ACTION_REFRESH_SWORDS;
-  }
+  // if(currentRoutine == CB_ROUTINE_FARM && !refreshPotions && currentAction == CB_ACTION_REFRESH_POTIONS)
+  // {
+  //   currentAction = CB_ACTION_REFRESH_SWORDS;
+  // }
 
   if(currentRoutine == CB_ROUTINE_FARM && refreshPotions)
   {
@@ -374,24 +387,21 @@ void Bot::handleFighting()
     }
     else if (currentMode == CB_REFRESH_MODE_MAP)
     {
-      // Check if swords are already disabled
-      if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
-      {
-        // Open map
-        Emulator::click(instance, markers[CB_POSITION_FIGHTING_MAP]);
-        waitFor(1500, 100);
-
-        if(configMode == CB_REFRESH_MODE_RANDOM)
-        {
-          // Choose a new refresh mode between logout and map
-          refreshMode = Random::choose(0, 1);
-        }
-      }
-      else
+      if(!Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
       {
         // Stop attacking
+        refreshSwords = false;
         Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
         waitFor(1500, 100);
+      }
+      // Open map
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_MAP]);
+      waitFor(2500, 100);
+
+      if(configMode == CB_REFRESH_MODE_RANDOM)
+      {
+        // Choose a new refresh mode between logout and map
+        refreshMode = Random::choose(0, 1);
       }
     }
   }
@@ -401,12 +411,12 @@ void Bot::handleFighting()
   if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
     // If the current swords is below the threshold the swords should be reset
-    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
-    {
-      waitFor(1000, 100);
-      Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
-      waitFor(1500, 100);
-    }
+    // if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
+    // {
+    waitFor(1000, 100);
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
+    waitFor(1500, 100);
+    // }
   }
   // END SWORDS ACTIONS
 
@@ -449,11 +459,34 @@ void Bot::handleFighting()
   }
 
   // Encounter
-  if(currentRoutine == CB_ROUTINE_FARM && config->encounter && !tempo.isOnCooldown("clear_encounter_" + instance))
+  if(
+    currentRoutine == CB_ROUTINE_FARM &&
+    config->encounter &&
+    currentAction == CB_ACTION_REFRESH_SWORDS &&
+    !tempo.isOnCooldown("clear_encounter_" + instance)
+  )
   {
     currentAction = CB_ACTION_CLEAR_ENCOUNTER;
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_SHOW_ENCOUNTER]);
     waitFor(3500, 100);
+  }
+
+  // Fishing
+  if(
+    currentRoutine == CB_ROUTINE_FARM &&
+    config->fishing &&
+    currentAction == CB_ACTION_REFRESH_SWORDS &&
+    !tempo.isOnCooldown("clear_fishing_" + instance)
+  )
+  {
+    currentAction = CB_ACTION_CLEAR_FISHING;
+    bool stillOnFighting = Emulator::compareImages(instance, markers[CB_LOCATION_FIGHTING_FIGHTING]);
+
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_FISHING]) && stillOnFighting)
+    {
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_FISHING]);
+      waitFor(3500, 100);
+    }
   }
 }
 
@@ -690,20 +723,9 @@ void Bot::handleMap()
     if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_TOWN]))
     {
       Emulator::click(instance, markers[CB_POSITION_MAP_TOWN]);
-      waitFor(1500, 100);
+      waitFor(2500, 100);
     }
 
-    // Close the map if it should not go the the fighting scene
-    if(Emulator::compareImages(instance, markers[CB_LOCATION_MAP_MAP]))
-    {
-      currentAction = CB_ACTION_REFRESH_SWORDS;
-      // Click on the close button
-      if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_CLOSE_BTN]))
-      {
-        Emulator::click(instance, markers[CB_POSITION_MAP_CLOSE_BTN]);
-        waitFor(1000, 100);
-      }
-    }
   }
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS || currentAction == CB_ACTION_NONE)
@@ -718,6 +740,18 @@ void Bot::handleMap()
     {
       Emulator::click(instance, markers[monster.name]);
       waitFor(1500, 100);
+    }
+  }
+
+  // Close the map if it should not go the the fighting scene
+  if(Emulator::compareImages(instance, markers[CB_LOCATION_MAP_MAP]))
+  {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    // Click on the close button
+    if(Emulator::compareImages(instance, markers[CB_POSITION_MAP_CLOSE_BTN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_MAP_CLOSE_BTN]);
+      waitFor(1000, 100);
     }
   }
 }
@@ -751,13 +785,124 @@ void Bot::handleAborQuest()
   }
 }
 
+void Bot::handleFishing()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_FISHING_FISHING];
+
+  bool fishingFinished = false;
+
+  if(!config->fishing)
+  {
+    return;
+  }
+
+  Marker baitTextRegion = markers[CB_POSITION_FISHING_BAIT_TEXT_REGION];
+  Marker baitTextRegionDown = markers[CB_POSITION_FISHING_BAIT_TEXT_REGION_DOWN];
+
+  // Check baits up and down
+  std::string text = textFromImage(instance, baitTextRegion);
+  std::string textDown = textFromImage(instance, baitTextRegionDown);
+
+  size_t pos10 = text.find("10/30");
+  size_t pos20 = text.find("20/30");
+  size_t pos30 = text.find("30/30");
+  size_t pos0 = text.find("0/30");
+
+  if(pos0 != std::string::npos && pos10 == std::string::npos && pos20 == std::string::npos && pos30 == std::string::npos)
+  {
+    fishingFinished = true;
+  }
+
+  pos0 = textDown.find("0/30");
+  pos10 = textDown.find("10/30");
+  pos20 = textDown.find("20/30");
+  pos30 = textDown.find("30/30");
+
+  if(pos0 != std::string::npos && pos10 == std::string::npos && pos20 == std::string::npos && pos30 == std::string::npos)
+  {
+    fishingFinished = true;
+  }
+
+  Marker dailyQuotaRegion = markers[CB_POSITION_FISHING_DAILY_QUOTA_TEXT];
+  Marker dailyQuotaRegionDown = markers[CB_POSITION_FISHING_DAILY_QUOTA_TEXT_DOWN];
+
+  std::string dqText = textFromImage(instance, dailyQuotaRegion);
+  std::string dqTextDown = textFromImage(instance, dailyQuotaRegionDown);
+
+  size_t resPos = dqText.find("res");
+  size_t resPosDown = dqTextDown.find("res");
+
+  if(resPos != std::string::npos || resPosDown != std::string::npos)
+  {
+    fishingFinished = true;
+  }
+
+  // Check if getting bait is disabled
+  bool baiting = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_BAITING_DISABLED]);
+  bool baitingDown = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_BAITING_DISABLED_DOWN]);
+
+  if(baiting)
+  {
+    Emulator::click(instance, markers[CB_POSITION_FISHING_BAITING_DISABLED]);
+    waitFor(1500, 100);
+    return;
+  }
+
+  if(baitingDown)
+  {
+    Emulator::click(instance, markers[CB_POSITION_FISHING_BAITING_DISABLED_DOWN]);
+    waitFor(1500, 100);
+    return;
+  }
+
+  if(fishingFinished || currentAction != CB_ACTION_CLEAR_FISHING || tempo.hasPassed("exit_fishing_" + instance, 1000 * 45))
+  {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+
+    waitFor(3000, 100);
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FISHING_CLOSE_BTN]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_FISHING_CLOSE_BTN]);
+      waitFor(2000, 100);
+    }
+
+    // Set cooldown of 30 min to clear encounter again
+    tempo.setCooldown("clear_fishing_" + instance, 1000 * 60 * Random::choose(38, 43));
+    tempo.clearTimepoint("exit_fishing_" + instance);
+    return;
+  }
+
+  bool startFishing = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING]);
+  bool startFishingDown = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN]);
+  bool startFishingDownPressed = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN_PRESSED]);
+
+  if(startFishing)
+  {
+    Emulator::click(instance, markers[CB_POSITION_FISHING_START_FISHING]);
+    waitFor(3000, 100);
+  }
+
+  if(startFishingDown || startFishingDownPressed)
+  {
+    Emulator::click(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN]);
+    waitFor(3000, 100);
+  }
+}
+
 void Bot::handleEncounter()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ENCOUNTER_ENCOUNTER];
 
+  if(!config->encounter)
+  {
+    return;
+  }
+
   bool encounterFinished = false;
 
-  std::string energyText = textFromImage(instance, markers[CB_POSITION_ENCOUNTER_ENERGY_TEXT_REGION]);
+  Marker textRegion = markers[CB_POSITION_ENCOUNTER_ENERGY_TEXT_REGION];
+
+  std::string energyText = textFromImage(instance, textRegion);
   if(!energyText.empty())
   {
     // Og string looks like 4 0/200(numbers here)
@@ -766,23 +911,22 @@ void Bot::handleEncounter()
     {
       // substring will look like
       values = util::split(values[0], ' ');
-      if(values.size() > 1)
+      std::string value = values.size() > 1 ? values[1] : values[0];
+      if(value == "0/200")
       {
-        if(values[1] == "0/200")
-        {
-          encounterFinished = true;
-        }
+        encounterFinished = true;
       }
     }
   }
 
-  // Exit if the encounter is finished or has passed 2 minutes
-  if(config->encounter && (encounterFinished || tempo.hasPassed("exit_encounter_" + instance, 1000 * 60 * 2)))
+  // Exit if the encounter is finished or has passed 1.5 minutes
+  if(encounterFinished || currentAction != CB_ACTION_CLEAR_ENCOUNTER || tempo.hasPassed("exit_encounter_" + instance, 1000 * 60 * 1.5))
   {
     currentAction = CB_ACTION_REFRESH_SWORDS;
     currentEncounterAttack = 0;
     currentEncounterMonster = 0;
 
+    waitFor(3000, 100);
     if(Emulator::compareImages(instance, markers[CB_LOCATION_ENCOUNTER_ENCOUNTER]))
     {
       Emulator::click(instance, markers[CB_LOCATION_ENCOUNTER_ENCOUNTER]);
@@ -790,12 +934,8 @@ void Bot::handleEncounter()
     }
 
     // Set cooldown of 30 min to clear encounter again
-    tempo.setCooldown("clear_encounter_" + instance, 1000 * 60 * 30);
-    return;
-  }
-
-  if(!config->encounter || currentAction != CB_ACTION_CLEAR_ENCOUNTER)
-  {
+    tempo.setCooldown("clear_encounter_" + instance, 1000 * 60 * Random::choose(28, 33));
+    tempo.clearTimepoint("exit_encounter_" + instance);
     return;
   }
 
