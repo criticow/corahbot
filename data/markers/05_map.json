@@ -60,6 +60,14 @@
     {"name":"aeropaloid","location":"map","x":60,"y":226,"width":16,"height":16},
     {"name":"minod","location":"map","x":200,"y":226,"width":16,"height":16},
     {"name":"styro","location":"map","x":200,"y":136,"width":16,"height":16},
-    {"name":"sauron","location":"map","x":269,"y":136,"width":16,"height":16}
+    {"name":"sauron","location":"map","x":269,"y":136,"width":16,"height":16},
+
+    {"name":"mitron","location":"map","x":102,"y":50,"width":50,"height":10},
+    {"name":"corki","location":"map","x":128,"y":408,"width":16,"height":16},
+    {"name":"fayvz","location":"map","x":198,"y":408,"width":16,"height":16},
+    {"name":"gul_dahn","location":"map","x":128,"y":322,"width":16,"height":16},
+    {"name":"belzeye","location":"map","x":198,"y":322,"width":16,"height":16},
+    {"name":"syon","location":"map","x":128,"y":236,"width":16,"height":16},
+    {"name":"clay_kiold","location":"map","x":198,"y":236,"width":16,"height":16}
   ]
 }

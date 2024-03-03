@@ -5,6 +5,7 @@
 #include <rapidjson/filereadstream.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <map>
 #include "generated_macros.hpp"
 #include "work_config.hpp"
 

@@ -15,6 +15,9 @@ std::vector<Selectable> Store::foods{
   {"food_fish_pie_perfect", "Perfect Ranhain Fish Pie (P)"},
   {"food_fish_soup", "Jakal's Spicy Fish Soup"},
   {"food_fish_soup_perfect", "Jakal's Spicy Fish Soup (P)"},
+  {"food_sauron", "Sauron's Feast"},
+  {"food_sushi", "Sushi à l'Airos"},
+  {"food_sushi_perfect", "Sushi à l'Airos (P)"}
 };
 
 std::vector<Selectable> Store::potions{
@@ -35,8 +38,8 @@ std::unordered_map<std::string, std::string> Store::portals{
   { CB_POSITION_MAP_VULCARDI, "Vulcardi"},
   { CB_POSITION_MAP_ICEROOST, "Iceroost"},
   { CB_POSITION_MAP_FORILON, "Forilon"},
-  { CB_POSITION_MAP_AIROS, "Airos"}
-  // "Mitron"
+  { CB_POSITION_MAP_AIROS, "Airos"},
+  { CB_POSITION_MAP_MITRON, "Mitron"}
 };
 
 std::vector<std::string> Store::refreshModes{
@@ -120,6 +123,17 @@ std::unordered_map<std::string, std::vector<Monster>> Store::monsters{
       {CB_POSITION_MAP_IRON_DRAKE, "Iron Drake (Lv.275)"},
       {CB_POSITION_MAP_ANCIENT_DRAGON, "Ancient Dragon (Lv.300)"},
       {CB_POSITION_MAP_SULFAROS, "Sulfaros (Lv.320)"}
+    }
+  },
+  {
+    CB_POSITION_MAP_MITRON,
+    {
+      {CB_POSITION_MAP_CORKI, "Corki (Lv.340)"},
+      {CB_POSITION_MAP_FAYVZ, "Fayvz (Lv.340)"},
+      {CB_POSITION_MAP_GUL_DAHN, "Gul Dahn (Lv.360)"},
+      {CB_POSITION_MAP_BELZEYE, "Belzeye (Lv.360)"},
+      {CB_POSITION_MAP_SYON, "Syon (Lv.380)"},
+      {CB_POSITION_MAP_CLAY_KIOLD, "Clay Kiold (Lv.380)"}
     }
   }
 };

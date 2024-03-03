@@ -438,18 +438,26 @@ void Bot::handleFighting()
   }
 
   // Quests
-  if(currentRoutine == CB_ROUTINE_FARM && config->quests)
+  if(currentRoutine == CB_ROUTINE_FARM && config->quests && config->selectedQuests.size() > 0)
   {
     if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]))
     {
-      Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]);
-      waitFor(500, 100);
+      waitFor(0, 2500);
+      if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]))
+      {
+        Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_AVAILABLE]);
+        waitFor(1500, 100);
+      }
     }
 
     if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]))
     {
-      Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]);
-      waitFor(500, 100);
+      waitFor(0, 2500);
+      if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]))
+      {
+        Emulator::click(instance, markers[CB_POSITION_FIGHTING_QUEST_FINISHED]);
+        waitFor(1500, 100);
+      }
     }
   }
 
@@ -731,10 +739,10 @@ void Bot::handleMap()
   if(currentAction == CB_ACTION_REFRESH_SWORDS || currentAction == CB_ACTION_NONE)
   {
     // Check if it is not in the correct portal, to change location
-    // if(!Emulator::compareImages(instance, markers[config->selectedPortal]))
-    // {
-    //   LOGGER_DEBUG("It is not in the correct portal");
-    // }
+    if(!Emulator::compareImages(instance, markers[config->selectedPortal]))
+    {
+      LOGGER_DEBUG("It is not in the correct portal");
+    }
 
     if(Emulator::compareImages(instance, markers[monster.name]))
     {
@@ -872,20 +880,19 @@ void Bot::handleFishing()
     return;
   }
 
-  bool startFishing = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING]);
-  bool startFishingDown = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN]);
-  bool startFishingDownPressed = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN_PRESSED]);
+  bool info = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_INFO]);
+  bool infoDown = Emulator::compareImages(instance, markers[CB_POSITION_FISHING_INFO_DOWN]);
 
-  if(startFishing)
+  if(info)
   {
     Emulator::click(instance, markers[CB_POSITION_FISHING_START_FISHING]);
-    waitFor(3000, 100);
+    waitFor(2000, 100);
   }
 
-  if(startFishingDown || startFishingDownPressed)
+  if(infoDown)
   {
     Emulator::click(instance, markers[CB_POSITION_FISHING_START_FISHING_DOWN]);
-    waitFor(3000, 100);
+    waitFor(2000, 100);
   }
 }
 
@@ -1080,12 +1087,6 @@ void Bot::handleQuests()
 
   if(currentRoutine == CB_ROUTINE_FARM && config->quests)
   {
-    Marker &dragStart = markers[CB_POSITION_QUESTS_DRAG_START];
-    Marker &dragEnd = markers[CB_POSITION_QUESTS_DRAG_END];
-
-    Emulator::drag(instance, {dragStart.x, dragStart.y}, {dragEnd.x, dragEnd.y});
-    waitFor(1500, 100);
-
     bool res = false;
     for(auto &quest : config->selectedQuests)
     {
@@ -1093,6 +1094,7 @@ void Bot::handleQuests()
 
       if(res)
       {
+        waitFor(500, 1500);
         Emulator::click(instance, markers[quest]);
         waitFor(2500, 100);
         break;
@@ -1102,6 +1104,7 @@ void Bot::handleQuests()
     if(!res)
     {
       config->quests = false;
+      waitFor(500, 1500);
       Emulator::click(instance, markers[CB_POSITION_QUESTS_CLOSE_BTN]);
       waitFor(500, 100);
     }

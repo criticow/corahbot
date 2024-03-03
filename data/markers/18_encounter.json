@@ -18,6 +18,11 @@
     {"name":"monster_bottom_left","location":"encounter","x":54,"y":504,"width":14,"height":14},
     {"name":"monster_bottom_right","location":"encounter","x":189,"y":504,"width":14,"height":14},
 
+    {"name":"top_left_text","location":"encounter","x":93,"y":431,"width":27,"height":41},
+    {"name":"top_right_text","location":"encounter","x":227,"y":431,"width":27,"height":41},
+    {"name":"bottom_right_text","location":"encounter","x":227,"y":510,"width":27,"height":41},
+    {"name":"bottom_left_text","location":"encounter","x":93,"y":510,"width":27,"height":41},
+
     {"name":"top_left_pixel","location":"encounter","x":52,"y":422,"width":1,"height":1},
     {"name":"top_right_pixel","location":"encounter","x":186,"y":422,"width":1,"height":1},
     {"name":"bottom_right_pixel","location":"encounter","x":186,"y":502,"width":1,"height":1},

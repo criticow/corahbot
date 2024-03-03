@@ -4,10 +4,10 @@
   "markers": [
     {"name":"drag_start","location":"quests","x":281,"y":368,"width":0,"height":0},
     {"name":"drag_end","location":"quests","x":282,"y":288,"width":0,"height":0},
-    {"name":"scroll_ancient","location":"quests","x":186,"y":180,"width":44,"height":13},
-    {"name":"scroll_demoniac","location":"quests","x":184,"y":295,"width":45,"height":10},
-    {"name":"scroll_arcane","location":"quests","x":186,"y":407,"width":44,"height":10},
-    {"name":"scroll_shadow","location":"quests","x":186,"y":520,"width":44,"height":10},
+    {"name":"scroll_ancient","location":"quests","x":186,"y":198,"width":45,"height":14},
+    {"name":"scroll_demoniac","location":"quests","x":184,"y":311,"width":47,"height":14},
+    {"name":"scroll_arcane","location":"quests","x":186,"y":423,"width":46,"height":16},
+    {"name":"scroll_shadow","location":"quests","x":186,"y":535,"width":45,"height":16},
     {"name":"close_btn","location":"quests","x":272,"y":77,"width":13,"height":13}
   ]
 }

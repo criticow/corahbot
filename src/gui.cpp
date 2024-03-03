@@ -405,7 +405,7 @@ void GUI::summaryUI(const std::string &instance)
 
 void GUI::selectableList(const std::string &instance, const std::string &name, std::vector<Selectable> &selectableList, std::vector<std::string> &selectedItems)
 {
-  ImGui::SeparatorText("Chips");
+  ImGui::SeparatorText(name.c_str());
   for(auto &item : selectableList)
   {
     std::vector<std::string>::iterator it = std::find(selectedItems.begin(), selectedItems.end(), item.name);
