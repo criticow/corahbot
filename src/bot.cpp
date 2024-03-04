@@ -956,6 +956,8 @@ void Bot::handleEncounter()
   // Check if needs to go to the next room
   if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_NEXT_ROOM]))
   {
+    currentEncounterAttack = 0;
+    currentEncounterMonster = 0;
     waitFor(3500, 100);
     checkEncounterRewards(markers);
     Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_NEXT_ROOM]);
@@ -967,6 +969,8 @@ void Bot::handleEncounter()
   // Check if needs to start a new encounter
   if(Emulator::compareImages(instance, markers[CB_POSITION_ENCOUNTER_NEW_ENCOUNTER]))
   {
+    currentEncounterAttack = 0;
+    currentEncounterMonster = 0;
     Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_NEW_ENCOUNTER]);
     waitFor(1500, 100);
     return;
@@ -984,17 +988,8 @@ void Bot::handleEncounter()
 
   if(currentEncounterMonster == 0)
   {
-    Marker &pixel = markers[CB_POSITION_ENCOUNTER_TOP_LEFT_PIXEL];
-    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
-
-    int blue = color[0];
-    int green = color[1];
-    int red = color[2];
-
-    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
-    bool hasHp = red != 1 || green != 40 || blue != 75;
-
-    if(hasHp)
+    Marker &monsterText = markers[CB_POSITION_ENCOUNTER_TOP_LEFT_TEXT];
+    if(Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_LEFT]);
       waitFor(1200, 100);
@@ -1007,17 +1002,8 @@ void Bot::handleEncounter()
 
   if(currentEncounterMonster == 1)
   {
-    Marker &pixel = markers[CB_POSITION_ENCOUNTER_TOP_RIGHT_PIXEL];
-    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
-
-    int blue = color[0];
-    int green = color[1];
-    int red = color[2];
-
-    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
-    bool hasHp = red != 1 || green != 40 || blue != 75;
-
-    if(hasHp)
+    Marker &monsterText = markers[CB_POSITION_ENCOUNTER_TOP_RIGHT_TEXT];
+    if(Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_RIGHT]);
       waitFor(1200, 100);
@@ -1030,17 +1016,8 @@ void Bot::handleEncounter()
 
   if(currentEncounterMonster == 2)
   {
-    Marker &pixel = markers[CB_POSITION_ENCOUNTER_BOTTOM_RIGHT_PIXEL];
-    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
-
-    int blue = color[0];
-    int green = color[1];
-    int red = color[2];
-
-    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
-    bool hasHp = red != 1 || green != 40 || blue != 75;
-
-    if(hasHp)
+    Marker &monsterText = markers[CB_POSITION_ENCOUNTER_BOTTOM_RIGHT_TEXT];
+    if(Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_RIGHT]);
       waitFor(1200, 100);
@@ -1053,17 +1030,8 @@ void Bot::handleEncounter()
 
   if(currentEncounterMonster == 3)
   {
-    Marker &pixel = markers[CB_POSITION_ENCOUNTER_BOTTOM_LEFT_PIXEL];
-    cv::Vec3b color = Emulator::getPixelColor(instance, pixel.x, pixel.y);
-
-    int blue = color[0];
-    int green = color[1];
-    int red = color[2];
-
-    // dark color when mob is dead is 1, 40, 75 if the current color at this point is diff the mob is alive
-    bool hasHp = red != 1 || green != 40 || blue != 75;
-
-    if(hasHp)
+    Marker &monsterText = markers[CB_POSITION_ENCOUNTER_BOTTOM_LEFT_TEXT];
+    if(Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_LEFT]);
       waitFor(1200, 100);
