@@ -1,0 +1,7 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"new_pets_found","location":"new_pets_found","x":163,"y":146,"width":22,"height":20},
+  "markers": [
+    {"name":"continue_btn","location":"new_pets_found","x":140,"y":573,"width":66,"height":18}
+  ]
+}

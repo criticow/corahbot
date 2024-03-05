@@ -47,6 +47,8 @@ class Bot
   void handleAborQuest();
   void handleEncounter();
   void handleFishing();
+  void handlePets();
+  void handleNewPetsFound();
 
   std::string secondsToTime(int seconds);
   void waitFor(int amount, int deviation = 0);

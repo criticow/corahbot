@@ -24,6 +24,7 @@
     {"name":"show_encounter","location":"fighting","x":261,"y":183,"width":37,"height":10},
     {"name":"map","location":"fighting","x":255,"y":54,"width":43,"height":28},
 
-    {"name":"fishing","location":"fighting","x":216,"y":191,"width":15,"height":14}
+    {"name":"fishing","location":"fighting","x":216,"y":191,"width":15,"height":14},
+    {"name":"interrogation","location":"fighting","x":56,"y":369,"width":12,"height":11}
   ]
 }

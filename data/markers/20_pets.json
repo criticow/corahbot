@@ -1,0 +1,20 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"pets","location":"pets","x":100,"y":66,"width":72,"height":15},
+  "markers": [
+    {"name":"close_btn","location":"pets","x":280,"y":64,"width":15,"height":15},
+    {"name":"new_pets","location":"pets","x":195,"y":552,"width":92,"height":12},
+    {"name":"claim_1x3","location":"pets","x":234,"y":108,"width":29,"height":8},
+    {"name":"claim_1x2","location":"pets","x":153,"y":108,"width":29,"height":8},
+    {"name":"claim_1x1","location":"pets","x":73,"y":108,"width":29,"height":8},
+    {"name":"claim_2x3","location":"pets","x":234,"y":213,"width":29,"height":8},
+    {"name":"claim_2x2","location":"pets","x":153,"y":213,"width":29,"height":8},
+    {"name":"claim_2x1","location":"pets","x":73,"y":213,"width":29,"height":8},
+    {"name":"claim_3x3","location":"pets","x":234,"y":318,"width":29,"height":8},
+    {"name":"claim_3x2","location":"pets","x":153,"y":318,"width":29,"height":8},
+    {"name":"claim_3x1","location":"pets","x":73,"y":318,"width":29,"height":8},
+    {"name":"claim_4x3","location":"pets","x":234,"y":422,"width":29,"height":8},
+    {"name":"claim_4x2","location":"pets","x":153,"y":422,"width":29,"height":8},
+    {"name":"claim_4x1","location":"pets","x":73,"y":422,"width":29,"height":8}
+  ]
+}

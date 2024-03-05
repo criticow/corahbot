@@ -160,9 +160,7 @@ void Bot::run(const std::string &instance)
 
     if(config->reboot)
     {
-      // 45 min reset
       // Check if the expected time to reboot has passed
-
       if(tempo.hasPassed("reboot_" + instance, expectedRebootTime))
       {
         LOGGER_DEBUG("Rebooting instance {}", instance);
@@ -248,6 +246,12 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_FISHING_FISHING)
       handleFishing();
 
+    if(location == CB_LOCATION_PETS_PETS)
+      handlePets();
+
+    if(location == CB_LOCATION_NEW_PETS_FOUND_NEW_PETS_FOUND)
+      handleNewPetsFound();
+
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
@@ -314,6 +318,7 @@ void Bot::run(const std::string &instance)
     summary->questsDone = std::to_string(questsDone);
     summary->encounterCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_encounter_" + instance) / 1000 * -1));
     summary->fishingCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_fishing_" + instance) / 1000 * -1));
+    summary->collectPetsCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("collect_pets_" + instance) / 1000 * -1));
     summary->nextRefreshMode = Store::refreshModes[refreshMode];
 
     instanceMutex.unlock();
@@ -355,11 +360,6 @@ void Bot::handleFighting()
   {
     refreshPotions = true;
   }
-
-  // if(currentRoutine == CB_ROUTINE_FARM && !refreshPotions && currentAction == CB_ACTION_REFRESH_POTIONS)
-  // {
-  //   currentAction = CB_ACTION_REFRESH_SWORDS;
-  // }
 
   if(currentRoutine == CB_ROUTINE_FARM && refreshPotions)
   {
@@ -410,13 +410,9 @@ void Bot::handleFighting()
   // START SWORDS ACTIONS
   if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
-    // If the current swords is below the threshold the swords should be reset
-    // if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]))
-    // {
     waitFor(1000, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
     waitFor(1500, 100);
-    // }
   }
   // END SWORDS ACTIONS
 
@@ -462,8 +458,19 @@ void Bot::handleFighting()
   }
 
   // Pets
-  if(currentRoutine == CB_ROUTINE_FARM && config->pets)
+  if(
+    currentRoutine == CB_ROUTINE_FARM &&
+    config->pets &&
+    currentAction == CB_ACTION_REFRESH_SWORDS &&
+    !tempo.isOnCooldown("collect_pets_" + instance)
+  )
   {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_FIGHTING_INTERROGATION]))
+    {
+      currentAction = CB_ACTION_COLLECT_PETS;
+      Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
+      waitFor(1500, 100);
+    }
   }
 
   // Encounter
@@ -498,6 +505,22 @@ void Bot::handleFighting()
   }
 }
 
+void Bot::handleNewPetsFound()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_NEW_PETS_FOUND_NEW_PETS_FOUND];
+
+  if(!config->pets)
+  {
+    return;
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_NEW_PETS_FOUND_CONTINUE_BTN]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_NEW_PETS_FOUND_CONTINUE_BTN]);
+    waitFor(2000, 100);
+  }
+}
+
 void Bot::handleGear()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_GEAR_GEAR];
@@ -524,7 +547,12 @@ void Bot::handleBook()
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_BOOK_BOOK];
   std::unordered_map<std::string, Marker> &markers2 = Store::markers[CB_LOCATION_BOOK_GUILDLESS_BOOK_GUILDLESS];
 
-  if(currentRoutine == CB_ROUTINE_FARM && currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+  if(currentRoutine != CB_ROUTINE_FARM)
+  {
+    return;
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
   {
     if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_BAG]))
     {
@@ -539,6 +567,26 @@ void Bot::handleBook()
     }
   }
 
+  if(currentAction == CB_ACTION_COLLECT_PETS)
+  {
+    if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_PETS_AVAILABLE]))
+    {
+      Emulator::click(instance, markers[CB_POSITION_BOOK_PETS_AVAILABLE]);
+      waitFor(1500, 100);
+    }
+    else if(Emulator::compareImages(instance, markers2[CB_POSITION_BOOK_GUILDLESS_PETS_AVAILABLE]))
+    {
+      Emulator::click(instance, markers2[CB_POSITION_BOOK_GUILDLESS_PETS_AVAILABLE]);
+      waitFor(1500, 100);
+    }
+    else
+    {
+      currentAction = CB_ACTION_REFRESH_SWORDS;
+      tempo.setCooldown("collect_pets_" + instance, 1000 * 60 * 10);
+      Emulator::click(instance, Store::markers[CB_LOCATION_FIGHTING_FIGHTING][CB_POSITION_FIGHTING_NO_SWORD]);
+      waitFor(1500, 100);
+    }
+  }
 }
 
 void Bot::handleInventory()
@@ -634,9 +682,32 @@ void Bot::handleLogin()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
 
-  if(currentRoutine == CB_ROUTINE_FARM)
+  if(currentRoutine != CB_ROUTINE_FARM)
   {
-    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_BTN]);
+    return;
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_WARRIOR]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_WARRIOR]);
+    waitFor(2000, 100);
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_HUNTER]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_HUNTER]);
+    waitFor(2000, 100);
+  }
+  
+  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_MAGE]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_MAGE]);
+    waitFor(2000, 100);
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_ROGUE]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_ROGUE]);
     waitFor(2000, 100);
   }
 }
@@ -896,6 +967,53 @@ void Bot::handleFishing()
   }
 }
 
+void Bot::handlePets()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_PETS_PETS];
+  if(!config->pets || currentRoutine != CB_ROUTINE_FARM)
+  {
+    return;
+  }
+
+  // Check if it is on cooldown or the max time has passed
+  std::vector<Marker> pets = {
+    markers[CB_POSITION_PETS_CLAIM_1X1], markers[CB_POSITION_PETS_CLAIM_1X2], markers[CB_POSITION_PETS_CLAIM_1X3],
+    markers[CB_POSITION_PETS_CLAIM_2X1], markers[CB_POSITION_PETS_CLAIM_2X2], markers[CB_POSITION_PETS_CLAIM_2X3],
+    markers[CB_POSITION_PETS_CLAIM_3X1], markers[CB_POSITION_PETS_CLAIM_3X2], markers[CB_POSITION_PETS_CLAIM_3X3],
+    markers[CB_POSITION_PETS_CLAIM_4X1], markers[CB_POSITION_PETS_CLAIM_4X2], markers[CB_POSITION_PETS_CLAIM_4X3]
+  };
+
+  // Check if there is new pets to get
+  if(Emulator::compareImages(instance, markers[CB_POSITION_PETS_NEW_PETS]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_PETS_NEW_PETS]);
+    waitFor(2000, 100);
+    return;
+  }
+
+  for(auto &marker : pets)
+  {
+    if(Emulator::compareImages(instance, marker))
+    {
+      Marker position = marker;
+      position.y = marker.y + 10;
+
+      Emulator::click(instance, position);
+      waitFor(1500, 100);
+      Emulator::click(instance, position);
+      waitFor(1500, 100);
+      return;
+    }
+  }
+
+  if(Emulator::compareImages(instance, markers[CB_POSITION_PETS_CLOSE_BTN]))
+  {
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    Emulator::click(instance, markers[CB_POSITION_PETS_CLOSE_BTN]);
+    waitFor(2500, 100);
+  }
+}
+
 void Bot::handleEncounter()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_ENCOUNTER_ENCOUNTER];
@@ -989,7 +1107,7 @@ void Bot::handleEncounter()
   if(currentEncounterMonster == 0)
   {
     Marker &monsterText = markers[CB_POSITION_ENCOUNTER_TOP_LEFT_TEXT];
-    if(Emulator::compareImages(instance, monsterText))
+    if(!Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_LEFT]);
       waitFor(1200, 100);
@@ -1003,7 +1121,7 @@ void Bot::handleEncounter()
   if(currentEncounterMonster == 1)
   {
     Marker &monsterText = markers[CB_POSITION_ENCOUNTER_TOP_RIGHT_TEXT];
-    if(Emulator::compareImages(instance, monsterText))
+    if(!Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_TOP_RIGHT]);
       waitFor(1200, 100);
@@ -1017,7 +1135,7 @@ void Bot::handleEncounter()
   if(currentEncounterMonster == 2)
   {
     Marker &monsterText = markers[CB_POSITION_ENCOUNTER_BOTTOM_RIGHT_TEXT];
-    if(Emulator::compareImages(instance, monsterText))
+    if(!Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_RIGHT]);
       waitFor(1200, 100);
@@ -1031,7 +1149,7 @@ void Bot::handleEncounter()
   if(currentEncounterMonster == 3)
   {
     Marker &monsterText = markers[CB_POSITION_ENCOUNTER_BOTTOM_LEFT_TEXT];
-    if(Emulator::compareImages(instance, monsterText))
+    if(!Emulator::compareImages(instance, monsterText))
     {
       Emulator::click(instance, markers[CB_POSITION_ENCOUNTER_MONSTER_BOTTOM_LEFT]);
       waitFor(1200, 100);

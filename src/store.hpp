@@ -83,6 +83,7 @@ struct Summary
   std::string questsDone = "0";
   std::string encounterCooldown = "00:00:00";
   std::string fishingCooldown = "00:00:00";
+  std::string collectPetsCooldown = "00:00:00";
   std::string nextRefreshMode = "unknown";
 };
 

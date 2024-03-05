@@ -395,6 +395,7 @@ void GUI::summaryUI(const std::string &instance)
     ImGui::Text(("Quests Done: " + summary.questsDone).c_str());
     ImGui::Text(("Next Encounter: " + summary.encounterCooldown).c_str());
     ImGui::Text(("Next Fishing: " + summary.fishingCooldown).c_str());
+    ImGui::Text(("Next Pet Collection: " + summary.collectPetsCooldown).c_str());
     ImGui::Text(("Next Refresh Mode: " + summary.nextRefreshMode).c_str());
 
     Store::mutexes[instance].unlock();

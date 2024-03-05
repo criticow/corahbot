@@ -2,6 +2,7 @@
   "version": "0.0.1",
   "identifier": {"name":"book","location":"book","x":183,"y":361,"width":10,"height":10},
   "markers": [
-    {"name":"bag","location":"book","x":73,"y":210,"width":20,"height":11}
+    {"name":"bag","location":"book","x":73,"y":210,"width":20,"height":11},
+    {"name":"pets_available","location":"book","x":156,"y":253,"width":11,"height":11}
   ]
 }
