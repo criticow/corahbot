@@ -152,6 +152,7 @@ void GUI::renderUI()
           this->farmUI(instance);
           this->buffsUI(instance);
           this->questsUI(instance);
+          this->combineUI(instance);
           this->summaryUI(instance);
           ImGui::EndTabBar();
         }
@@ -299,6 +300,30 @@ void GUI::buffsUI(const std::string &instance)
   }
 }
 
+void GUI::combineUI(const std::string &instance)
+{
+  WorkConfig &config = Store::configs[instance];
+
+  if(ImGui::BeginTabItem("Combine"))
+  {
+    ImGui::Checkbox("Enable", &config.combine);
+
+    if(!config.combine)
+    {
+      ImGui::EndTabItem();
+      return;
+    }
+
+    ImGui::Spacing();
+    ImGui::Columns(2, "GemsColumns", false);
+    selectableList(instance, "Gems", Store::gems, config.selectedGems);
+    ImGui::NextColumn();
+    selectableList(instance, "Chips", Store::chips, config.selectedGems);
+    ImGui::Columns(1);
+    ImGui::EndTabItem();
+  }
+}
+
 void GUI::questsUI(const std::string & instance)
 {
   WorkConfig &config = Store::configs[instance];
@@ -396,6 +421,7 @@ void GUI::summaryUI(const std::string &instance)
     ImGui::Text(("Next Encounter: " + summary.encounterCooldown).c_str());
     ImGui::Text(("Next Fishing: " + summary.fishingCooldown).c_str());
     ImGui::Text(("Next Pet Collection: " + summary.collectPetsCooldown).c_str());
+    ImGui::Text(("Next Gem Combination: " + summary.combineGemsCooldown).c_str());
     ImGui::Text(("Next Refresh Mode: " + summary.nextRefreshMode).c_str());
 
     Store::mutexes[instance].unlock();

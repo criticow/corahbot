@@ -319,6 +319,7 @@ void Bot::run(const std::string &instance)
     summary->encounterCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_encounter_" + instance) / 1000 * -1));
     summary->fishingCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("clear_fishing_" + instance) / 1000 * -1));
     summary->collectPetsCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("collect_pets_" + instance) / 1000 * -1));
+    summary->combineGemsCooldown = secondsToTime(static_cast<int>(tempo.getCooldown("combine_gems_" + instance) / 1000 * -1));
     summary->nextRefreshMode = Store::refreshModes[refreshMode];
 
     instanceMutex.unlock();
@@ -503,6 +504,18 @@ void Bot::handleFighting()
       waitFor(3500, 100);
     }
   }
+
+  if(
+    currentRoutine == CB_ROUTINE_FARM &&
+    config->combine && 
+    currentAction == CB_ACTION_REFRESH_SWORDS &&
+    !tempo.isOnCooldown("combine_gems_" + instance)
+  )
+  {
+    currentAction = CB_ACTION_COMBINE_GEMS;
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
+    waitFor(1500, 100);
+  }
 }
 
 void Bot::handleNewPetsFound()
@@ -552,7 +565,7 @@ void Bot::handleBook()
     return;
   }
 
-  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY || currentAction == CB_ACTION_COMBINE_GEMS)
   {
     if(Emulator::compareImages(instance, markers[CB_POSITION_BOOK_BAG]))
     {
@@ -592,6 +605,7 @@ void Bot::handleBook()
 void Bot::handleInventory()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_INVENTORY_INVENTORY];
+
   std::vector<Marker> invSlots{
     markers[CB_POSITION_INVENTORY_INV_SLOT_1], markers[CB_POSITION_INVENTORY_INV_SLOT_2], markers[CB_POSITION_INVENTORY_INV_SLOT_3],
     markers[CB_POSITION_INVENTORY_INV_SLOT_4], markers[CB_POSITION_INVENTORY_INV_SLOT_5], markers[CB_POSITION_INVENTORY_INV_SLOT_6],
@@ -634,12 +648,12 @@ void Bot::handleInventory()
       // Not found, close and deactivate buffing
       if(!res.first)
       {
-        currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
+        currentAction = CB_ACTION_CLOSE_INVENTORY;
         config->buffs = false;
       }
     }
     
-    if(currentAction == CB_ACTION_REFRESH_BUFFS_RETURN)
+    if(currentAction == CB_ACTION_CLOSE_INVENTORY)
     {
       if(Emulator::compareImages(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]))
       {
@@ -647,6 +661,42 @@ void Bot::handleInventory()
         waitFor(2500, 100);
         Emulator::click(instance, markers[CB_POSITION_INVENTORY_CLOSE_BTN]);
         waitFor(2500, 100);
+      }
+    }
+
+    if(currentAction == CB_ACTION_COMBINE_GEMS)
+    {
+      std::pair<bool, glm::ivec4> res = {false, glm::ivec4(0)};
+      // Look for the first food in the list, if found click if not go to the next
+      for(auto &gem : config->selectedGems)
+      {
+        for(auto &marker : invSlots)
+        {
+          cv::Mat needle = cv::imread("data/images/items/" + gem + ".png");
+          cv::Mat haysteack = Emulator::printscreen(instance, marker.x, marker.y, marker.width, marker.height);
+
+          res = Emulator::find(haysteack, needle, 0.90);
+
+          // The item was found
+          if(res.first)
+          {
+            Emulator::click(instance, {marker.x + res.second.x, marker.y + res.second.y, res.second.z, res.second.w});
+            waitFor(1000, 100);
+            break;
+          }
+        }
+
+        // The item was found
+        if(res.first)
+          break;
+      }
+
+      // Not found, close and deactivate buffing
+      if(!res.first)
+      {
+        currentAction = CB_ACTION_CLOSE_INVENTORY;
+        // Since there are no gems/chips to combine just set a 30 min cooldown
+        tempo.setCooldown("combine_gems_" + instance, 1000 * 60 * Random::choose(25, 33));
       }
     }
   }
@@ -670,10 +720,42 @@ void Bot::handleItemOpen()
 
       if(res.first)
       {
-        currentAction = CB_ACTION_REFRESH_BUFFS_RETURN;
+        currentAction = CB_ACTION_CLOSE_INVENTORY;
         Emulator::click(instance, {useBtnRegion.x + res.second.x, useBtnRegion.y + res.second.y, res.second.z, res.second.w});
         waitFor(1000, 100);
       }
+    }
+
+    if(currentAction == CB_ACTION_COMBINE_GEMS)
+    {
+      bool canCombine = Emulator::compareImages(instance, markers[CB_POSITION_ITEM_OPEN_COMBINE_BTN]);
+      bool canMerge = Emulator::compareImages(instance, markers[CB_POSITION_ITEM_OPEN_MERGE_BTN]);
+
+      if(canCombine || canMerge)
+      {
+        Emulator::click(instance, markers[CB_POSITION_ITEM_OPEN_COMBINE_BTN]);
+        waitFor(500, 100);
+      }
+      else
+      {
+        // 25 - 33 min cooldown if there are no gems to combine/merge (wont work correctly if combining/merging multiple)
+        tempo.setCooldown("combine_gems_" + instance, 1000 * 60 * Random::choose(25,33));
+        currentAction = CB_ACTION_CLOSE_INVENTORY;
+      }
+
+      if(tempo.hasPassed("combine_gems_runtime_" + instance, 1000 * Random::choose(30,45)))
+      {
+        tempo.setCooldown("combine_gems_" + instance, 1000 * 60 * Random::choose(5,7));
+        tempo.clearTimepoint("combine_gems_runtime_" + instance);
+        currentAction = CB_ACTION_CLOSE_INVENTORY;
+      }
+    }
+
+    // Make sure it closes the item if it is still open after doing a action
+    if(currentAction != CB_ACTION_REFRESH_SWORDS && Emulator::compareImages(instance, markers[CB_LOCATION_ITEM_OPEN_ITEM_OPEN]))
+    {
+      Emulator::click(instance, markers[CB_LOCATION_ITEM_OPEN_ITEM_OPEN]);
+      waitFor(1000, 100);
     }
   }
 }

@@ -18,6 +18,7 @@ class WorkConfig
   bool pets = false;
   bool encounter = false;
   bool fishing = false;
+  bool combine = false;
 
   int refreshMode = 0;
   std::string selectedPortal = CB_POSITION_MAP_RANHAIN;
@@ -27,6 +28,7 @@ class WorkConfig
 
   std::vector<std::string> selectedBuffs;
   std::vector<std::string> selectedQuests;
+  std::vector<std::string> selectedGems;
 
   WorkConfig(){};
   WorkConfig(const std::string &json);

@@ -34,10 +34,11 @@ with open(generated_file, "w") as file:
   file.write('#define CB_ACTION_REFRESH_POTIONS "refresh_potions"\n')
   file.write('#define CB_ACTION_UPDATE_EXP "update_exp"\n')
   file.write('#define CB_ACTION_REFRESH_BUFFS_INVENTORY "refresh_buffs_inventory"\n')
-  file.write('#define CB_ACTION_REFRESH_BUFFS_RETURN "refresh_buffs_return"\n')
+  file.write('#define CB_ACTION_CLOSE_INVENTORY "close_inventory"\n')
   file.write('#define CB_ACTION_CLEAR_ENCOUNTER "clear_encounter"\n')
   file.write('#define CB_ACTION_CLEAR_FISHING "clear_fishing"\n')
   file.write('#define CB_ACTION_COLLECT_PETS "collect_pets"\n')
+  file.write('#define CB_ACTION_COMBINE_GEMS "combine_gems"\n')
 
   file.write('\n')
 

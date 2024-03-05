@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "identifier": {"name":"item_open","location":"item_open","x":150,"y":52,"width":48,"height":9},
   "markers": [
-    {"name":"combine","location":"item_open","x":100,"y":313,"width":38,"height":10},
+    {"name":"combine_btn","location":"item_open","x":98,"y":312,"width":42,"height":13},
+    {"name":"merge_btn","location":"item_open","x":98,"y":312,"width":42,"height":13},
     {"name":"use_btn_region","location":"item_open","x":152,"y":90,"width":160,"height":160},
     {"name":"use_btn","location":"item_open","x":243,"y":174,"width":37,"height":20}
   ]

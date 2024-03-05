@@ -27,6 +27,7 @@ class GUI : public BaseGUI
   void actionsUI(const std::string &instance);
   void farmUI(const std::string &instance);
   void buffsUI(const std::string &instance);
+  void combineUI(const std::string &instance);
   void questsUI(const std::string &instance);
   void summaryUI(const std::string &instance);
 

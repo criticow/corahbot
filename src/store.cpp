@@ -25,6 +25,18 @@ std::vector<Selectable> Store::potions{
   {"potion_triple_exp", "Triple EXP Potion"},
 };
 
+std::vector<Selectable> Store::gems{
+  {"amethyst", "Amethyst"},
+  {"topaz", "Topaz"},
+  {"opal", "Opal"}
+};
+
+std::vector<Selectable> Store::chips{
+  {"amethyst_chip", "Amethyst Chip"},
+  {"topaz_chip", "Topaz Chip"},
+  {"opal_chip", "Opal Chip"}
+};
+
 std::vector<Selectable> Store::scrolls{
   {CB_POSITION_QUESTS_SCROLL_ANCIENT, "Ancient Scroll"},
   {CB_POSITION_QUESTS_SCROLL_DEMONIAC, "Demoniac Scroll"},

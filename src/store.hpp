@@ -84,6 +84,7 @@ struct Summary
   std::string encounterCooldown = "00:00:00";
   std::string fishingCooldown = "00:00:00";
   std::string collectPetsCooldown = "00:00:00";
+  std::string combineGemsCooldown = "00:00:00";
   std::string nextRefreshMode = "unknown";
 };
 
@@ -104,6 +105,8 @@ class Store
   static std::vector<Selectable> foods;
   static std::vector<Selectable> potions;
   static std::vector<Selectable> scrolls;
+  static std::vector<Selectable> gems;
+  static std::vector<Selectable> chips;
 
   static std::vector<std::string> refreshModes;
 
