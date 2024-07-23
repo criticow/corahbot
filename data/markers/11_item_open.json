@@ -6,6 +6,11 @@
     {"name":"combine_btn","location":"item_open","x":98,"y":312,"width":42,"height":13},
     {"name":"merge_btn","location":"item_open","x":98,"y":312,"width":42,"height":13},
     {"name":"use_btn_region","location":"item_open","x":152,"y":90,"width":160,"height":160},
-    {"name":"use_btn","location":"item_open","x":243,"y":174,"width":37,"height":20}
+    {"name":"use_btn","location":"item_open","x":243,"y":174,"width":37,"height":20},
+
+    {"name":"gems_1x5","location":"item_open","x":98,"y":312,"width":42,"height":13},
+    {"name":"gems_2x5","location":"item_open","x":98,"y":312,"width":42,"height":13},
+    {"name":"gems_3x5","location":"item_open","x":98,"y":312,"width":42,"height":13},
+    {"name":"gems_4x5","location":"item_open","x":98,"y":312,"width":42,"height":13}
   ]
 }

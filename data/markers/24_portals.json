@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"portals","location":"portals","x":175,"y":96,"width":13,"height":12},
+  "markers": [
+    {"name":"dekdun","location":"portals","x":144,"y":220,"width":54,"height":14},
+    {"name":"vulcardi","location":"portals","x":143,"y":273,"width":56,"height":15},
+    {"name":"iceroost","location":"portals","x":145,"y":329,"width":52,"height":15},
+    {"name":"forilon","location":"portals","x":148,"y":383,"width":47,"height":16},
+    {"name":"airos","location":"portals","x":151,"y":438,"width":39,"height":16},
+    {"name":"mitron","location":"portals","x":148,"y":494,"width":46,"height":15},
+    {"name":"ranhain","location":"portals","x":145,"y":165,"width":51,"height":13},
+    {"name":"close_btn","location":"portals","x":284,"y":98,"width":15,"height":14}
+  ]
+}

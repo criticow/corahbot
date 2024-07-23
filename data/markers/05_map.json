@@ -16,12 +16,12 @@
     {"name":"goblin_chief","location":"map","x":199,"y":145,"width":16,"height":16},
 
     {"name":"dekdun","location":"map","x":102,"y":50,"width":50,"height":10},
-    {"name":"thia","location":"map","x":197,"y":143,"width":16,"height":16},
     {"name":"skeleton_worker","location":"map","x":130,"y":410,"width":16,"height":16},
     {"name":"lost_amummy","location":"map","x":130,"y":321,"width":16,"height":16},
     {"name":"skeleton_captain","location":"map","x":130,"y":239,"width":16,"height":16},
     {"name":"skeleton_wizard","location":"map","x":61,"y":235,"width":16,"height":16},
     {"name":"skeleton_thief","location":"map","x":197,"y":236,"width":16,"height":16},
+    {"name":"thia","location":"map","x":197,"y":143,"width":16,"height":16},
     {"name":"skeleton_king","location":"map","x":267,"y":148,"width":16,"height":16},
 
     {"name":"vulcardi","location":"map","x":102,"y":50,"width":50,"height":10},
@@ -31,7 +31,7 @@
     {"name":"jargol","location":"map","x":199,"y":237,"width":16,"height":16},
     {"name":"devil_giant","location":"map","x":198,"y":147,"width":16,"height":16},
     {"name":"grem","location":"map","x":59,"y":231,"width":16,"height":16},
-    {"name":"razath","location":"map","x":269,"y":142,"width":16,"height":16},
+    {"name":"razath","location":"map","x":264,"y":135,"width":16,"height":16},
 
     {"name":"iceroost","location":"map","x":102,"y":50,"width":50,"height":10},
     {"name":"rinch","location":"map","x":129,"y":410,"width":16,"height":16},

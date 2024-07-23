@@ -25,16 +25,22 @@ std::vector<Selectable> Store::potions{
   {"potion_triple_exp", "Triple EXP Potion"},
 };
 
+std::vector<Selectable> Store::premiumBuffs{
+  {"exp_potion_premium", "Catch-UP Exp Potion"},
+};
+
 std::vector<Selectable> Store::gems{
-  {"amethyst", "Amethyst"},
-  {"topaz", "Topaz"},
-  {"opal", "Opal"}
+  {"amethyst", "Create Greater Amethyst"},
+  {"topaz", "Create Greater Topaz"},
+  {"opal", "Create Greater Opal"},
+  {"sapphire", "Create Greater Sapphire"}
 };
 
 std::vector<Selectable> Store::chips{
-  {"amethyst_chip", "Amethyst Chip"},
-  {"topaz_chip", "Topaz Chip"},
-  {"opal_chip", "Opal Chip"}
+  {"amethyst_chip", "Create Amethyst"},
+  {"topaz_chip", "Create Topaz"},
+  {"opal_chip", "Create Opal"},
+  {"sapphire_chip", "Create Sapphire"}
 };
 
 std::vector<Selectable> Store::scrolls{

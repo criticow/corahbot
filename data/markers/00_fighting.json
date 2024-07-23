@@ -17,6 +17,7 @@
     {"name":"buff_vulcardi","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_airos","location":"fighting","x":102,"y":558,"width":25,"height":12},
     {"name":"buff_forilon","location":"fighting","x":102,"y":558,"width":25,"height":12},
+    {"name":"buff_mitron","location":"fighting","x":102,"y":558,"width":25,"height":12},
 
     {"name":"quest_available","location":"fighting","x":262,"y":154,"width":30,"height":10},
     {"name":"quest_finished","location":"fighting","x":273,"y":136,"width":30,"height":10},
@@ -25,6 +26,7 @@
     {"name":"map","location":"fighting","x":255,"y":54,"width":43,"height":28},
 
     {"name":"fishing","location":"fighting","x":216,"y":191,"width":15,"height":14},
-    {"name":"interrogation","location":"fighting","x":56,"y":369,"width":12,"height":11}
+    {"name":"interrogation","location":"fighting","x":56,"y":369,"width":12,"height":11},
+    {"name":"cash_shop_btn","location":"fighting","x":223,"y":589,"width":29,"height":12}
   ]
 }

@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"cash_shop","location":"cash_shop","x":158,"y":51,"width":30,"height":13},
+  "markers": [
+    {"name":"close_btn","location":"cash_shop","x":287,"y":51,"width":15,"height":11},
+    {"name":"exp_potion_51x100","location":"cash_shop","x":245,"y":361,"width":19,"height":18},
+    {"name":"exp_potion_101x150","location":"cash_shop","x":162,"y":361,"width":19,"height":18}
+  ]
+}

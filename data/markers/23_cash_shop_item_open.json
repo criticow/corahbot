@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "identifier": {"name":"cash_shop_item_open","location":"cash_shop_item_open","x":158,"y":51,"width":30,"height":13},
+  "markers": [
+    {"name":"activate_buff_btn","location":"cash_shop_item_open","x":135,"y":412,"width":76,"height":22},
+    {"name":"exp_potion","location":"cash_shop_item_open","x":157,"y":256,"width":27,"height":27},
+    {"name":"close_btn","location":"cash_shop_item_open","x":280,"y":123,"width":15,"height":15}
+  ]
+}

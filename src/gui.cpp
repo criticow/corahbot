@@ -291,10 +291,24 @@ void GUI::buffsUI(const std::string &instance)
     }
 
     ImGui::Spacing();
+
+    ImGui::RadioButton("Normal Buffs", &config.buffType, 0);
+    ImGui::SameLine();
+    ImGui::RadioButton("Premium Buffs", &config.buffType, 1);
+
     ImGui::Columns(2, "BuffsColumns", false);
-    selectableList(instance, "Foods", Store::foods, config.selectedBuffs);
-    ImGui::NextColumn();
-    selectableList(instance, "Potions", Store::potions, config.selectedBuffs);
+    if(config.buffType == 0)
+    {
+      selectableList(instance, "Foods", Store::foods, config.selectedBuffs);
+      ImGui::NextColumn();
+      selectableList(instance, "Potions", Store::potions, config.selectedBuffs);
+    }
+    if(config.buffType == 1)
+    {
+      selectableList(instance, "Buffs", Store::premiumBuffs, config.selectedPremiumBuffs);
+      ImGui::NextColumn();
+    }
+
     ImGui::Columns(1);
     ImGui::EndTabItem();
   }
@@ -376,6 +390,11 @@ void GUI::actionsUI(const std::string &instance)
     }
 
     state.working.store(false);
+  }
+  ImGui::SameLine();
+  if(ImGui::Button(ICON_FA_CAMERA))
+  {
+    cv::imwrite("data/screenshots/" + Random::UUID() + ".png", Emulator::printscreen(instance));
   }
   ImGui::Spacing();
 }

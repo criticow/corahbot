@@ -263,10 +263,12 @@ void Emulator::drawRectangles(cv::Mat &canvas, const std::vector<glm::ivec4> &po
   }
 }
 
-bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
+bool Emulator::compareImages(cv::Mat &image1, cv::Mat &image2)
 {
-  cv::Mat image1 = cv::imread("data/images/" + marker.location + "/" + marker.name + ".png");
-  cv::Mat image2 = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+  if(image1.empty() || image2.empty())
+  {
+    return false;
+  }
 
   cv::Mat diff;
   cv::absdiff(image1, image2, diff);
@@ -282,6 +284,14 @@ bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
   // If the sum of differences is zero, the images are the same
   return sum[0] == 0 && sum[1] == 0 && sum[2] == 0 && sum[3] == 0;
 #endif
+}
+
+bool Emulator::compareImages(const std::string &windowTitle, Marker marker)
+{
+  cv::Mat image1 = cv::imread("data/images/" + marker.location + "/" + marker.name + ".png");
+  cv::Mat image2 = printscreen(windowTitle, marker.x, marker.y, marker.width, marker.height);
+
+  return compareImages(image1, image2);
 }
 
 void Emulator::runapp(const std::string &windowTitle, const std::string &packageName)

@@ -18,10 +18,12 @@ WorkConfig::WorkConfig(const std::string &json)
     if(document.HasMember("quests")) quests = document["quests"].GetBool();
 
     if(document.HasMember("selectedBuffs")) loadVectorFromArray("selectedBuffs", selectedBuffs, document);
+    if(document.HasMember("selectedPremiumBuffs")) loadVectorFromArray("selectedPremiumBuffs", selectedPremiumBuffs, document);
     if(document.HasMember("selectedQuests")) loadVectorFromArray("selectedQuests", selectedQuests, document);
     if(document.HasMember("selectedGems")) loadVectorFromArray("selectedGems", selectedGems, document);
 
     if(document.HasMember("selectedPortal")) selectedPortal = document["selectedPortal"].GetString();
+    if(document.HasMember("buffType")) buffType = document["buffType"].GetInt();
     if(document.HasMember("swordsThreshold")) swordsThreshold = document["swordsThreshold"].GetInt();
     if(document.HasMember("refreshMode")) refreshMode = document["refreshMode"].GetInt();
     if(document.HasMember("potionsThreshold")) potionsThreshold = document["potionsThreshold"].GetInt();
@@ -45,11 +47,13 @@ std::string WorkConfig::toJson()
   document.AddMember("combine", combine, document.GetAllocator());
 
   document.AddMember("selectedBuffs", createArrayFromVector(document, selectedBuffs), document.GetAllocator());
+  document.AddMember("selectedPremiumBuffs", createArrayFromVector(document, selectedPremiumBuffs), document.GetAllocator());
   document.AddMember("selectedQuests", createArrayFromVector(document, selectedQuests), document.GetAllocator());
   document.AddMember("selectedGems", createArrayFromVector(document, selectedGems), document.GetAllocator());
 
   document.AddMember("refreshMode", refreshMode, document.GetAllocator());
   document.AddMember("selectedPortal", rapidjson::StringRef(selectedPortal.c_str()), document.GetAllocator());
+  document.AddMember("buffType", buffType, document.GetAllocator());
   document.AddMember("selectedMonster", selectedMonster, document.GetAllocator());
   document.AddMember("swordsThreshold", swordsThreshold, document.GetAllocator());
   document.AddMember("potionsThreshold", potionsThreshold, document.GetAllocator());

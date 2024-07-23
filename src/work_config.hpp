@@ -12,21 +12,23 @@ class WorkConfig
   public:
   bool farm = false;;
   bool buffs = false;
+  int buffType = 0;
   bool quests = false;
   bool reboot = false;
   bool restart = false;
-  bool pets = false;
+  bool pets = true;
   bool encounter = false;
   bool fishing = false;
   bool combine = false;
 
-  int refreshMode = 0;
+  int refreshMode = 1;
   std::string selectedPortal = CB_POSITION_MAP_RANHAIN;
   int selectedMonster = 0;
   int swordsThreshold = 15;
   int potionsThreshold = 1;
 
   std::vector<std::string> selectedBuffs;
+  std::vector<std::string> selectedPremiumBuffs;
   std::vector<std::string> selectedQuests;
   std::vector<std::string> selectedGems;
 

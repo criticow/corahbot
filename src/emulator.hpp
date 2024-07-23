@@ -38,6 +38,7 @@ class Emulator
   static std::pair<bool, glm::ivec4> find(cv::Mat haystack, cv::Mat needle, float threshold);
   
   static void drawRectangles(cv::Mat &canvas, const std::vector<glm::ivec4> &points);
+  static bool compareImages(cv::Mat &image1, cv::Mat &image2);
   static bool compareImages(const std::string &windowTitle, Marker marker);
 
   static cv::Mat printscreen(const std::string &windowTitle);

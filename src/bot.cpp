@@ -252,6 +252,15 @@ void Bot::run(const std::string &instance)
     if(location == CB_LOCATION_NEW_PETS_FOUND_NEW_PETS_FOUND)
       handleNewPetsFound();
 
+    if(location == CB_LOCATION_CASH_SHOP_CASH_SHOP)
+      handleCashShop();
+    
+    if(location == CB_LOCATION_CASH_SHOP_ITEM_OPEN_CASH_SHOP_ITEM_OPEN)
+      handleCashShopItemOpen();
+    
+    if(location == CB_LOCATION_UNDERWORLD_UNDERWORLD)
+      handleUnderworld();
+
     if(location == CB_LOCATION_DISCONNECTED_DISCONNECTED)
     {
       Emulator::click(instance, Store::markers[CB_LOCATION_DISCONNECTED_DISCONNECTED][CB_LOCATION_DISCONNECTED_DISCONNECTED]);
@@ -411,16 +420,22 @@ void Bot::handleFighting()
   // START SWORDS ACTIONS
   if(currentRoutine == CB_ROUTINE_FARM && refreshSwords && currentAction == CB_ACTION_REFRESH_SWORDS)
   {
-    waitFor(1000, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_NO_SWORD]);
     waitFor(1500, 100);
   }
   // END SWORDS ACTIONS
 
-  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY)
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_INVENTORY && !config->selectedBuffs.empty())
   {
     waitFor(3000, 100);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
+    waitFor(3000, 100);
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_CASH_SHOP && !config->selectedPremiumBuffs.empty())
+  {
+    waitFor(3000, 100);
+    Emulator::click(instance, markers[CB_POSITION_FIGHTING_CASH_SHOP_BTN]);
     waitFor(3000, 100);
   }
 
@@ -430,7 +445,15 @@ void Bot::handleFighting()
     // Check if there is buff applied to reapply
     if(config->buffs && Emulator::compareImages(instance, buffLoc))
     {
-      currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
+      switch(config->buffType)
+      {
+        case 0:
+          currentAction = CB_ACTION_REFRESH_BUFFS_INVENTORY;
+          break;
+        case 1:
+          currentAction = CB_ACTION_REFRESH_BUFFS_CASH_SHOP;
+          break;
+      }
     }
   }
 
@@ -509,10 +532,12 @@ void Bot::handleFighting()
     currentRoutine == CB_ROUTINE_FARM &&
     config->combine && 
     currentAction == CB_ACTION_REFRESH_SWORDS &&
-    !tempo.isOnCooldown("combine_gems_" + instance)
+    !tempo.isOnCooldown("combine_gems_" + instance) &&
+    !config->selectedGems.empty()
   )
   {
     currentAction = CB_ACTION_COMBINE_GEMS;
+    tempo.clearTimepoint("combine_gems_runtime_" + instance);
     Emulator::click(instance, markers[CB_POSITION_FIGHTING_BOOK]);
     waitFor(1500, 100);
   }
@@ -531,6 +556,104 @@ void Bot::handleNewPetsFound()
   {
     Emulator::click(instance, markers[CB_POSITION_NEW_PETS_FOUND_CONTINUE_BTN]);
     waitFor(2000, 100);
+  }
+}
+
+void Bot::handleCashShop()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_CASH_SHOP_CASH_SHOP];
+
+  if(currentRoutine != CB_ROUTINE_FARM || !config->buffs || config->buffType != 1)
+  {
+    return;
+  }
+
+  if(currentAction == CB_ACTION_REFRESH_BUFFS_CASH_SHOP)
+  {
+    std::vector<Marker> buffsMarkers{
+      markers[CB_POSITION_CASH_SHOP_EXP_POTION_51X100],
+      markers[CB_POSITION_CASH_SHOP_EXP_POTION_101X150]
+    };
+
+    Emulator::drag(instance, {300, 438}, {300, 115});
+    waitFor(300, 100);
+
+    for(auto &buff : config->selectedPremiumBuffs)
+    {
+      if(currentAction != CB_ACTION_REFRESH_BUFFS_CASH_SHOP)
+      {
+        break;
+      }
+
+      if(buff == "exp_potion_premium")
+      {
+        for(auto &buffMarker : buffsMarkers)
+        {
+          if(Emulator::compareImages(instance, buffMarker))
+          {
+            Emulator::click(instance, buffMarker);
+            waitFor(2000, 100);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Close the window if it is still open
+  if(Emulator::compareImages(instance, markers[CB_POSITION_CASH_SHOP_CLOSE_BTN]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_CASH_SHOP_CLOSE_BTN]);
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    waitFor(1000, 100);
+  }
+}
+
+void Bot::handleCashShopItemOpen()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_CASH_SHOP_ITEM_OPEN_CASH_SHOP_ITEM_OPEN];
+
+  if(currentRoutine != CB_ROUTINE_FARM || !config->buffs || config->buffType != 1)
+  {
+    return;
+  }
+
+  for(auto &buff : config->selectedPremiumBuffs)
+  {
+    if(currentAction != CB_ACTION_REFRESH_BUFFS_CASH_SHOP)
+    {
+      break;
+    }
+
+    if(buff == "exp_potion_premium" && Emulator::compareImages(instance, markers[CB_POSITION_CASH_SHOP_ITEM_OPEN_EXP_POTION]))
+    {
+      if(Emulator::compareImages(instance, markers[CB_POSITION_CASH_SHOP_ITEM_OPEN_ACTIVATE_BUFF_BTN]))
+      {
+        Emulator::click(instance, markers[CB_POSITION_CASH_SHOP_ITEM_OPEN_ACTIVATE_BUFF_BTN]);
+        currentAction = CB_ACTION_REFRESH_SWORDS;
+        waitFor(1000, 100);
+        break;
+      }
+    }
+  }
+
+  // Close the window if it is still open
+  if(Emulator::compareImages(instance, markers[CB_POSITION_CASH_SHOP_ITEM_OPEN_CLOSE_BTN]))
+  {
+    Emulator::click(instance, markers[CB_POSITION_CASH_SHOP_ITEM_OPEN_CLOSE_BTN]);
+    currentAction = CB_ACTION_REFRESH_SWORDS;
+    waitFor(1000, 100);
+  }
+}
+
+void Bot::handleUnderworld()
+{
+  std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_UNDERWORLD_UNDERWORLD];
+
+  if(config->encounter)
+  {
+    Emulator::click(instance, markers[CB_LOCATION_UNDERWORLD_UNDERWORLD]);
+    waitFor(1000, 100);
   }
 }
 
@@ -730,13 +853,29 @@ void Bot::handleItemOpen()
     {
       bool canCombine = Emulator::compareImages(instance, markers[CB_POSITION_ITEM_OPEN_COMBINE_BTN]);
       bool canMerge = Emulator::compareImages(instance, markers[CB_POSITION_ITEM_OPEN_MERGE_BTN]);
+      bool notEnoughGems = false;
+
+      std::vector<Marker> values = {
+        markers[CB_POSITION_ITEM_OPEN_GEMS_1X5], markers[CB_POSITION_ITEM_OPEN_GEMS_2X5],
+        markers[CB_POSITION_ITEM_OPEN_GEMS_3X5], markers[CB_POSITION_ITEM_OPEN_GEMS_4X5]
+      };
+
+      for(auto &marker : values)
+      {
+        if(Emulator::compareImages(instance, marker))
+        {
+          notEnoughGems = true;
+          break;
+        }
+      }
 
       if(canCombine || canMerge)
       {
         Emulator::click(instance, markers[CB_POSITION_ITEM_OPEN_COMBINE_BTN]);
-        waitFor(500, 100);
+        waitFor(1700, 100);
       }
-      else
+
+      if(notEnoughGems)
       {
         // 25 - 33 min cooldown if there are no gems to combine/merge (wont work correctly if combining/merging multiple)
         tempo.setCooldown("combine_gems_" + instance, 1000 * 60 * Random::choose(25,33));
@@ -764,39 +903,14 @@ void Bot::handleLogin()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_LOGIN_LOGIN];
 
-  if(currentRoutine != CB_ROUTINE_FARM)
-  {
-    return;
-  }
-
-  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_WARRIOR]))
-  {
-    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_WARRIOR]);
-    waitFor(2000, 100);
-  }
-
-  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_HUNTER]))
-  {
-    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_HUNTER]);
-    waitFor(2000, 100);
-  }
-  
-  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_MAGE]))
-  {
-    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_MAGE]);
-    waitFor(2000, 100);
-  }
-
-  if(Emulator::compareImages(instance, markers[CB_POSITION_LOGIN_LOGIN_ROGUE]))
-  {
-    Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_ROGUE]);
-    waitFor(2000, 100);
-  }
+  Emulator::click(instance, markers[CB_POSITION_LOGIN_LOGIN_BTN]);
+  waitFor(2000, 100);
 }
 
 void Bot::handleHome()
 {
   std::unordered_map<std::string, Marker> &markers = Store::markers[CB_LOCATION_HOME_HOME];
+
   bool potion29 = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION_29]);
   bool potion89 = Emulator::compareImages(instance, markers[CB_POSITION_HOME_POTION_89]);
   bool shoudlRefill = potion29 || potion89;
@@ -886,7 +1000,6 @@ void Bot::handleMap()
       Emulator::click(instance, markers[CB_POSITION_MAP_TOWN]);
       waitFor(2500, 100);
     }
-
   }
 
   if(currentAction == CB_ACTION_REFRESH_SWORDS || currentAction == CB_ACTION_NONE)
@@ -894,13 +1007,14 @@ void Bot::handleMap()
     // Check if it is not in the correct portal, to change location
     if(!Emulator::compareImages(instance, markers[config->selectedPortal]))
     {
-      LOGGER_DEBUG("It is not in the correct portal");
+      Emulator::click(instance, markers[CB_POSITION_MAP_TOWN]);
+      waitFor(2500, 100);
     }
 
     if(Emulator::compareImages(instance, markers[monster.name]))
     {
       Emulator::click(instance, markers[monster.name]);
-      waitFor(1500, 100);
+      waitFor(2500, 100);
     }
   }
 
@@ -1262,7 +1376,6 @@ void Bot::handleQuests()
 
       if(res)
       {
-        waitFor(500, 1500);
         Emulator::click(instance, markers[quest]);
         waitFor(2500, 100);
         break;
@@ -1272,7 +1385,6 @@ void Bot::handleQuests()
     if(!res)
     {
       config->quests = false;
-      waitFor(500, 1500);
       Emulator::click(instance, markers[CB_POSITION_QUESTS_CLOSE_BTN]);
       waitFor(500, 100);
     }
